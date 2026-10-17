@@ -35,7 +35,8 @@ public final class PlayerEngineFactory {
         };
     }
 
-    private static PlayerEngine createMpv(int decode, Player.Listener listener) {
+    /** Creates the software engine, falling back to Exo when MPV cannot be loaded. */
+    public static PlayerEngine createMpv(int decode, Player.Listener listener) {
         try {
             PlayerEngine engine = new MpvPlayerEngine(decode, listener);
             MpvLogCollector.log("PlayerEngineFactory", "MPV 引擎创建成功");

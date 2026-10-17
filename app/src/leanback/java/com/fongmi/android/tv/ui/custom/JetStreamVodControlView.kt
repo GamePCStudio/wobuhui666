@@ -270,6 +270,11 @@ class JetStreamVodControlView @JvmOverloads constructor(
         return topInfoVisible || centerInfoVisible
     }
 
+    /** The action the visible info layer stands for, so callers can tell the paused card from a seek hint. */
+    fun currentInfoAction(): String {
+        return infoAction
+    }
+
     fun isCenterInfoVisible(): Boolean {
         return centerInfoVisible
     }

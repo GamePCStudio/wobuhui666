@@ -1358,9 +1358,29 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
         mBinding.control.jetstream.setControlsVisible(false);
         mBinding.control.jetstream.showGroup(null);
         App.removeCallbacks(mR1);
-        if (isFullscreen() && service() != null && !player().isPlaying() && isPaused()) showInfo();
+        if (shouldShowPausedInfo()) showInfo();
         else updateJetStreamVisibility();
         if (restoreVideoFocus) requestFocus(mBinding.video, null);
+    }
+
+    /**
+     * The paused card belongs on screen only while playback is really stopped. A resume issued from
+     * the remote reaches the service before the controller reports it, so {@code isPlaying()} is
+     * still false for a moment; that window used to re-show the pause card (and its play icon)
+     * after playback had already resumed.
+     */
+    private boolean shouldShowPausedInfo() {
+        if (!isFullscreen() || service() == null || !isPaused()) return false;
+        return !player().isPlaying() && !isPlaybackRequested();
+    }
+
+    private boolean isPlaybackRequested() {
+        return controller() != null && controller().getPlayWhenReady();
+    }
+
+    /** Whether the card currently on screen is the paused card rather than a seek indicator. */
+    private boolean isPausedInfoVisible() {
+        return isJetStreamInfoVisible() && JetStreamVodControlView.ACTION_PLAY.equals(mBinding.control.jetstream.currentInfoAction());
     }
 
     private void showJetStreamInfo(boolean top, boolean center, String action, CharSequence position, CharSequence duration) {
@@ -1604,7 +1624,14 @@ public class VideoActivity extends PlaybackActivity implements VodPlaybackHost, 
     }
 
     private void updatePausedJetStreamInfo() {
-        if (isFullscreen() && service() != null && !player().isPlaying() && isPaused() && !isJetStreamControlVisible() && isJetStreamInfoVisible()) showInfo();
+        if (!isFullscreen() || service() == null || isJetStreamControlVisible()) return;
+        if (player().isPlaying() || isPlaybackRequested()) {
+            // Hiding used to depend on a single edge-triggered callback. Any missed or late hide
+            // left the pause icon over the resumed video, so converge on the real state instead.
+            if (isPausedInfoVisible()) hideInfo();
+            return;
+        }
+        if (!player().isPlaying() && isPaused() && isJetStreamInfoVisible()) showInfo();
     }
 
     private void setR1Callback() {
