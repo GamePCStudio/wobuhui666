@@ -41,6 +41,16 @@ public final class AudioTrackRecovery {
     }
 
     /**
+     * Exo can also stall before it reports any track at all — a Matroska DTS stream did on the test
+     * device — which ends in the play timeout instead of the unrendered-audio path. One retry on the
+     * software engine is allowed for that, and only once.
+     */
+    public static boolean shouldRetryOnTimeout(boolean engineIsExo, boolean softwareEngineUsable,
+            boolean alreadyUsingSoftwareEngine) {
+        return engineIsExo && softwareEngineUsable && !alreadyUsingSoftwareEngine;
+    }
+
+    /**
      * @param tracks track information reported by the player
      * @param audioDisabledByUser whether the user disabled the audio track type in the selection
      *     parameters, which means silence is intended

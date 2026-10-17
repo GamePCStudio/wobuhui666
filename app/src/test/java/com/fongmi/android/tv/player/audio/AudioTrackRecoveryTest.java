@@ -84,6 +84,14 @@ public class AudioTrackRecoveryTest {
     }
 
     @Test
+    public void aTimeoutOnExoIsRetriedOnceOnTheSoftwareEngine() {
+        assertTrue(AudioTrackRecovery.shouldRetryOnTimeout(true, true, false));
+        assertFalse(AudioTrackRecovery.shouldRetryOnTimeout(true, true, true));
+        assertFalse(AudioTrackRecovery.shouldRetryOnTimeout(true, false, false));
+        assertFalse(AudioTrackRecovery.shouldRetryOnTimeout(false, true, false));
+    }
+
+    @Test
     public void recoveryStopsAfterItsAttemptsAreUsedUp() {
         Tracks tracks = tracks(true, C.FORMAT_UNSUPPORTED_TYPE, false);
         assertEquals(AudioTrackRecovery.Action.NONE,

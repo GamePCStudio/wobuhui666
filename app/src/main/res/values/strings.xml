@@ -265,6 +265,7 @@
     <string name="error_play_url">Unable to load url</string>
     <string name="error_play_flag">No flag data</string>
     <string name="error_play_timeout">Timed out</string>
+    <string name="error_play_timeout_mpv">Exo timed out; retrying with the MPV engine</string>
     <string name="error_dolby_fallback">Switched to the platform Dolby Vision decoder</string>
     <string name="error_tunnel_fallback">Tunnel playback failed and was disabled</string>
     <string name="error_decode_fallback">Hardware decoding failed, switched to software decoding</string>

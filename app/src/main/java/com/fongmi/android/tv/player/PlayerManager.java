@@ -552,8 +552,25 @@ public class PlayerManager implements ParseCallback {
     }
 
     private void onPlayTimeout() {
+        if (retryWithSoftwareEngine()) return;
         stop();
         callback.onError(ResUtil.getString(R.string.error_play_timeout));
+    }
+
+    /**
+     * Some formats never reach READY on Exo (a Matroska DTS stream did not), so the audio recovery
+     * never sees a track to react to. Retry that item once on the software engine instead of failing
+     * the user with "Timed out"; setMediaItem re-arms this timeout for the retry.
+     */
+    private boolean retryWithSoftwareEngine() {
+        if (engine == null || spec == null || TextUtils.isEmpty(spec.getUrl())) return false;
+        boolean exo = engine.getType() == PlayerEngine.Type.EXO;
+        if (!AudioTrackRecovery.shouldRetryOnTimeout(exo, MpvPlayerEngine.isAvailable(), softwareEngineFallback)) return false;
+        MpvLogCollector.log("PlayerManager", "Exo 播放超时, 改用 MPV 引擎重试: " + getKey());
+        softwareEngineFallback = true;
+        Notify.show(R.string.error_play_timeout_mpv);
+        restartCurrent(Math.max(0, getPosition()), false);
+        return true;
     }
 
     private void ensureEngine(PlaySpec spec) {
