@@ -632,6 +632,11 @@ public class PlayerManager implements ParseCallback {
     public void start(PlaySpec spec, long timeout, long startPositionMs) {
         DiagnosticLog.record("playback", "request startPositionMs=" + startPositionMs + " decode=" + decode);
         forcePlatformEngine = false;
+        // A new media item is decoded by Exo again: only a track that again cannot be rendered
+        // moves this item to the software engine, so playable files keep Exo's own pipeline.
+        softwareEngineFallback = false;
+        audioRecoveryAttempts = 0;
+        audioRecoveryKey = null;
         this.spec = spec;
         setMediaItem(timeout, startPositionMs);
     }
