@@ -4,11 +4,11 @@
 
 面向 Android TV 和电视盒子的影音应用，也提供 Android 手机版。基于 [FongMi/TV](https://github.com/FongMi/TV) 与 [CatVod](https://github.com/CatVodTVOfficial/CatVodTVJarLoader)，围绕首页、片库、搜索、播放和设置，持续完善 JetStream 大屏界面与播放内核。
 
-[![TV · 点击观看 90 秒界面宣传片](docs/media/TV-promo-cover.jpg)](docs/media/TV-promo.mp4)
+[![TV · 点击观看 60 秒界面宣传片](docs/media/TV-promo-cover-60s.jpg)](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/iframe)
 
 [下载安装](#下载安装) · [功能亮点](#功能亮点) · [构建指南](LOCAL_BUILD_ENV.md) · [内核验证](docs/player-core-sync.md) · [反馈问题](https://github.com/wobuhui666/TV/issues) · [English](README.en.md)
 
-[观看宣传片](docs/media/TV-promo.mp4) / [下载 MP4](https://github.com/wobuhui666/TV/raw/refs/heads/ui/apple-tv-redesign/docs/media/TV-promo.mp4) · 90 秒 · 1080p · 中文字幕与配乐
+[在线观看宣传片](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/iframe) / [下载 MP4](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/downloads/default.mp4) · 60 秒 · 1080p · 中文字幕与配乐
 
 宣传片由模拟器实录制作，使用演示片库展示界面，不提供影片资源或订阅服务。演示片段为 Sintel © Blender Foundation（CC BY 3.0）；完整[素材来源与署名](docs/media/CREDITS.md)。
 
@@ -34,9 +34,9 @@
 <details>
 <summary>展开界面预览：从首页到播放与设置</summary>
 
-![TV 宣传片分镜总览： 首页、片库、推荐、搜索、详情、播放、直播与主题设置](docs/media/TV-promo-contact.jpg)
+![TV 宣传片分镜总览：首页、片库、推荐、搜索、详情、播放、直播与主题设置](docs/media/TV-promo-contact.jpg)
 
-来自成片的 13 个章节。宣传画面展示录制时的界面版本，后续细节以当前应用为准。
+分镜图取自上一版 90 秒宣传片，展示录制时的界面版本；界面细节以当前应用为准。
 
 </details>
 

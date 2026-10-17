@@ -4,11 +4,11 @@
 
 TV brings an Apple TV–inspired JetStream interface to Android TV, with a shared playback foundation for Android phones. Browse your library, resume a series, discover titles, and switch between live channels in one app.
 
-[![TV — watch the 90-second interface tour](docs/media/TV-promo-cover.jpg)](docs/media/TV-promo.mp4)
+[![TV — watch the 60-second interface tour](docs/media/TV-promo-cover-60s.jpg)](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/iframe)
 
 [Download APKs](https://github.com/wobuhui666/TV/releases) · [Getting started](#getting-started) · [Playback core](docs/player-core-sync.md) · [Report an issue](https://github.com/wobuhui666/TV/issues) · [简体中文](README.md)
 
-[Watch or download the video](docs/media/TV-promo.mp4) · 90 seconds · 1080p · H.264/AAC
+[Watch online](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/iframe) · [download the MP4](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/downloads/default.mp4) · 60 seconds · 1080p · H.264/AAC
 
 The tour uses emulator recordings and a demonstration library. The displayed titles and sources are examples, not a supplied content service. See [media credits](docs/media/CREDITS.md) for footage, images, music, and fonts.
 
@@ -39,7 +39,7 @@ Published APKs may lag behind this source branch. Check the notes and source rev
 
 ![TV interface overview: home, library, discovery, search, playback, live TV, and settings](docs/media/TV-promo-contact.jpg)
 
-Frames from the finished promotional video, including the demonstration library and emulator UI.
+Frames from the earlier 90-second cut of the tour, showing the interface as recorded. Interface details may differ slightly from the current app.
 
 </details>
 
