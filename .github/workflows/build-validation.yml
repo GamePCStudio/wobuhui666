@@ -122,6 +122,7 @@ jobs:
             --tests "com.fongmi.android.tv.source.health.*" \
             --tests "com.fongmi.android.tv.server.process.DiagnosticsTest" \
             --tests "com.fongmi.android.tv.player.exo.AbortableCallFactoryTest" \
+            --tests "com.fongmi.android.tv.player.audio.*" \
             --tests "com.fongmi.android.tv.player.exo.PreCachePolicyTest" \
             --tests "com.fongmi.android.tv.player.exo.PreloadBudgetTest" \
             --tests "com.fongmi.android.tv.playback.TemporaryPlaybackSpeedTest" \
