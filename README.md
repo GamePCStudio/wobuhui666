@@ -49,7 +49,6 @@
 | 选择 | 适用设备 |
 | --- | --- |
 | `leanback` / TV 版 | Android TV、电视盒子，以及主要使用遥控器的设备。 |
-| `mobile` / 手机版 | Android 手机和触屏设备；以当次发布实际提供的 APK 为准。 |
 | `arm64-v8a` | 运行 64 位 ARM Android 系统的设备。 |
 | `armeabi-v7a` | 需要 32 位 ARM 安装包的设备。 |
 

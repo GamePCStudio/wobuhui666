@@ -2,7 +2,7 @@
 
 **A media experience designed for the big screen and your remote.**
 
-TV brings an Apple TV–inspired JetStream interface to Android TV, with a shared playback foundation for Android phones. Browse your library, resume a series, discover titles, and switch between live channels in one app.
+TV brings an Apple TV–inspired JetStream interface to Android TV. Browse your library, resume a series, discover titles, and switch between live channels in one app.
 
 [![TV — watch the 60-second interface tour](docs/media/TV-promo-cover-60s.jpg)](https://customer-nkorbwmhxz04cbfd.cloudflarestream.com/b941aa27d5013806eb8fcab30cce4807/iframe)
 
@@ -56,7 +56,6 @@ Open this repository's [Releases](https://github.com/wobuhui666/TV/releases) and
 | Choice | Intended device |
 | --- | --- |
 | `leanback` / TV | Android TV, a TV box, or another device operated with a remote. |
-| `mobile` | Android phones and touch devices, when that release provides a mobile APK. |
 | `arm64-v8a` | A device with a 64-bit ARM Android environment. |
 | `armeabi-v7a` | A device that requires a 32-bit ARM APK. |
 
