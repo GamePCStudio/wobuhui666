@@ -76,9 +76,11 @@ public class AudioTrackRecoveryTest {
     }
 
     @Test
-    public void softwareEnginePlaybackIsNotFlippedBackToExo() {
+    public void theSoftwareEngineIsLeftAloneOnceItPlays() {
+        // MPV reports its own tracks; switching again or notifying would be wrong.
         Tracks tracks = tracks(true, C.FORMAT_UNSUPPORTED_TYPE, false);
-        assertEquals(AudioTrackRecovery.Action.NOTIFY_ONLY, AudioTrackRecovery.decide(tracks, false, false, false, 0));
+        assertEquals(AudioTrackRecovery.Action.NONE, AudioTrackRecovery.decide(tracks, false, false, false, 1));
+        assertEquals(AudioTrackRecovery.Action.NONE, AudioTrackRecovery.decide(tracks, false, false, true, 2));
     }
 
     @Test

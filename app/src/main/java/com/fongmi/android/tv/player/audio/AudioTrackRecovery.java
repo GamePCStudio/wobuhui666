@@ -53,9 +53,13 @@ public final class AudioTrackRecovery {
             boolean softwareEngineUsable, int attempts) {
         if (audioDisabledByUser || attempts >= MAX_ATTEMPTS) return Action.NONE;
         if (!hasUnrenderedAudio(tracks)) return Action.NONE;
+        // Only Exo builds its audio renderers from platform decoders, and the software engine is the
+        // last resort, so nothing here applies once the software engine is the one playing: its own
+        // track reporting must not trigger another switch or a misleading notice.
+        if (!engineIsExo) return Action.NONE;
         // A playable track exists but a saved or forced selection kept it out of the renderer.
         if (attempts == 0 && tracks.isTypeSupported(C.TRACK_TYPE_AUDIO)) return Action.RESELECT_TRACK;
-        if (engineIsExo && softwareEngineUsable) return Action.SWITCH_ENGINE;
+        if (softwareEngineUsable) return Action.SWITCH_ENGINE;
         return Action.NOTIFY_ONLY;
     }
 }
