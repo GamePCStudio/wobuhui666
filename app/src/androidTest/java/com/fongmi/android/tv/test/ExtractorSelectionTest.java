@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * Guards the extractor-selection fixes: the subtitle wrapper must forward the URI/header overload,
- * and the default order must try Matroska before MMT/TLV (matroska-before-mmt-tlv.patch).
+ * and the default order must try Matroska before MMT/TLV (pinned Media3 fork, wobuhui666/media#1).
  */
 @RunWith(AndroidJUnit4.class)
 public final class ExtractorSelectionTest {

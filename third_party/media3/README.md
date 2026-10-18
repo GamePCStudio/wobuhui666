@@ -2,14 +2,11 @@
 
 上游仓库：`https://github.com/wobuhui666/media`。
 
-固定基准：`3c2cbe8ac742c2fe15eff52f03eeb3b1b648848d`。CI 的 release 与 validation 构建都检出该提交，不跟随浮动分支。
+固定基准：`342f6590e02ac390e0bd6b4488b8a1bff55747c1`。CI 的 release 与 validation 构建都检出该提交，不跟随浮动分支。
 
-补丁一：`paused-danmaku-toggle.patch`，SHA-256：`463eba72b1c56c19e38065a8d1f4476ed7a8e6b0d5bd39f0a8c05ceb47c169d7`。
+补丁：`paused-danmaku-toggle.patch`，SHA-256：`463eba72b1c56c19e38065a8d1f4476ed7a8e6b0d5bd39f0a8c05ceb47c169d7`。
 
 该补丁修复暂停播放时关闭弹幕再开启后，画面中有效弹幕没有重新建立的问题。它只改动 `libraries/ui_danmaku/src/main/java/androidx/media3/ui/danmaku/` 下的 `DanmakuController.java` 和 `DanmakuView.java`，保留原上游许可。
-
-补丁二：`matroska-before-mmt-tlv.patch`，SHA-256：`0962b872882aabdb68610208363b7dd9fa2810964708788cb3ddee8a3cac36a3`。
-该补丁把 `DefaultExtractorsFactory.DEFAULT_EXTRACTOR_ORDER` 中的 `MATROSKA` 调整到 `MMT_TLV` 之前：TLV 嗅探是启发式的，会把含 DTS 帧头（`7F FE`）的 `.mkv` 载荷误判为 TLV 流，导致整片按 TLV 解析而卡死。它只改动 `DefaultExtractorsFactory.java`，保留原上游许可。对应上游改动见 `wobuhui666/media` 的修复 PR；合并后可移除本补丁并把固定提交前移。
 
 TV 根 `settings.gradle` 在 `includeBuild(MEDIA3_SOURCE_DIR)` 前调用 `apply_patches.py`。CI、现有本地构建模板和手工构建使用同一入口，无需在各工作流复制应用命令。也可对选定 checkout 显式预检/应用：
 
