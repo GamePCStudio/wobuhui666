@@ -116,7 +116,9 @@ public class RexNowMappingTest {
         assertEquals(2, merged.size());
         assertEquals("tmdb:tv:1", merged.get(0).getId());
         assertEquals("tmdb:tv:2", merged.get(1).getId());
-        assertEquals(2, RexNowClient.mergeDistinct(List.of(vod("a")), List.of(vod("b"), vod("c")), 1).size());
+        // cap 限制合并后的总量：基数已达上限时不再补入
+        assertEquals(1, RexNowClient.mergeDistinct(List.of(vod("a")), List.of(vod("b"), vod("c")), 1).size());
+        assertEquals(2, RexNowClient.mergeDistinct(List.of(vod("a")), List.of(vod("b"), vod("c")), 2).size());
     }
 
     @Test

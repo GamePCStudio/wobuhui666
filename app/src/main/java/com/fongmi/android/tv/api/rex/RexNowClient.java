@@ -391,8 +391,9 @@ public final class RexNowClient {
     public static String weekday(long epochMillis) {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Shanghai"));
         calendar.setTimeInMillis(epochMillis);
-        int index = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-        return WEEKDAYS[index < 0 ? 0 : Math.min(index, WEEKDAYS.length - 1)];
+        int index = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+        if (index < 0) index += 7;
+        return WEEKDAYS[Math.min(index, WEEKDAYS.length - 1)];
     }
 
     public static List<Vod> todayFromWeekly(Map<String, List<Vod>> weekly, long epochMillis) {
