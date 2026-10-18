@@ -2,10 +2,10 @@
 
 ## 默认行为
 
-- ECH 默认关闭，开启后使用官方 `org.conscrypt:conscrypt-android:2.7.0`。
+- ECH 默认开启，可在“设置 → 应用”关闭；开启后使用官方 `org.conscrypt:conscrypt-android:2.7.0`。
 - `EchDnsResolver` 查询 DNS HTTPS 记录（类型 65），从中获取 ECHConfigList。
-- 未选择 DoH（界面显示“系统”）时，ECH 查询默认使用 `https://1.1.1.1/dns-query`。
-- 已选择 DoH 时，ECH 查询复用当前 DoH 选择。
+- DoH 默认选择腾讯 `https://doh.pub/dns-query`，未手动选择时生效；ECH 查询复用当前 DoH 选择。
+- 显式选择“系统”时，ECH 查询使用 `https://1.1.1.1/dns-query`。
 - 优先使用目标自己发布的 ECH 配置。目标明确没有 HTTPS 记录或没有 ECH 参数时，使用同一 DoH 查询其 A/AAAA；至少有一个地址且所有已返回地址均属于 Cloudflare 已知官方网段，才使用 `crypto.cloudflare.com` 的共享 ECH 配置。
 - 只补充交给 TLS 的 ECHConfigList，不改变目标 URL、HTTP Host、TLS 内层域名、证书身份或连接地址。DoH 服务端的公开记录不会被修改。
 - DoH 查询失败、无法确认 Cloudflare 归属、取不到共享配置或目标端口不是 443 时，回退到原 TLS 路径。

@@ -9,8 +9,9 @@ public final class EchSettings {
     private EchSettings() {
     }
 
+    /** ECH is on by default; a stored preference always wins. */
     public static boolean isEnabled() {
-        return Prefers.getBoolean(KEY_ENABLED, false);
+        return Prefers.getBoolean(KEY_ENABLED, true);
     }
 
     public static void setEnabled(boolean enabled) {
