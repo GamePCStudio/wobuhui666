@@ -1,7 +1,6 @@
 package com.github.catvod.bean;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +34,19 @@ public class Doh {
         return items;
     }
 
+    /** DoH provider used until the user selects one in settings. */
+    public static final String DEFAULT_URL = "https://doh.pub/dns-query";
+
+    /** The default provider (Tencent) taken from the shipped list. */
+    public static Doh defaultItem(Context context) {
+        return pickDefault(context == null ? Collections.emptyList() : get(context));
+    }
+
+    static Doh pickDefault(List<Doh> items) {
+        for (Doh item : items) if (DEFAULT_URL.equals(item.getUrl())) return item;
+        return new Doh().name("Tencent").url(DEFAULT_URL);
+    }
+
     public static Doh objectFrom(String str) {
         Doh item = new Gson().fromJson(str, Doh.class);
         return item == null ? new Doh() : item;
@@ -61,11 +73,11 @@ public class Doh {
     }
 
     public String getName() {
-        return TextUtils.isEmpty(name) ? "" : name;
+        return name == null ? "" : name;
     }
 
     public String getUrl() {
-        return TextUtils.isEmpty(url) ? "" : url;
+        return url == null ? "" : url;
     }
 
     public List<String> getIps() {

@@ -27,7 +27,7 @@
 | 一起看 | [兼容官方 Syncplay 服务端](docs/syncplay.md)，两端各自播放同一影片，同步播放、暂停和进度；支持 TLS。 |
 | 多设备同步 | [WebDAV 收藏与观看进度同步](docs/webdav-sync.md)，逐条合并、删除同步与并发保护；订阅和少量弹幕偏好可选。 |
 | 直播与扩展 | 直播分组、EPG、追看；Java JAR、QuickJS、Python 配置扩展。 |
-| 网络与投放 | 按规则选择代理并处理跳转认证；DoH、请求头、DLNA 与局域网控制；[可选 ECH，含 Cloudflare 共享配置补全（默认关闭）](docs/ech-validation.md)。 |
+| 网络与投放 | 按规则选择代理并处理跳转认证；DoH、请求头、DLNA 与局域网控制；[ECH 默认开启，含 Cloudflare 共享配置补全（可在设置中关闭）](docs/ech-validation.md)。 |
 
 当前默认分支为 [`ui/apple-tv-redesign`](https://github.com/wobuhui666/TV/tree/ui/apple-tv-redesign)，已合入新播放内核。发布 APK 可能滞后于源码；例如 [v421](https://github.com/wobuhui666/TV/releases/tag/v421) 早于这轮内核修复，下载时请核对对应发布说明。
 

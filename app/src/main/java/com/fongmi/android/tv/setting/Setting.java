@@ -1,7 +1,9 @@
 package com.fongmi.android.tv.setting;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.github.catvod.bean.Doh;
 import com.github.catvod.utils.Prefers;
 
 public class Setting {
@@ -28,7 +30,8 @@ public class Setting {
     }
 
     public static String getDoh() {
-        return Prefers.getString("doh");
+        String stored = Prefers.getString("doh");
+        return stored.isEmpty() ? Doh.defaultItem(App.get()).toString() : stored;
     }
 
     public static void putDoh(String doh) {
