@@ -11,6 +11,7 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionParameters;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.VideoSize;
 import androidx.media3.ui.danmaku.DanmakuConfig;
@@ -29,8 +30,10 @@ import com.fongmi.android.tv.bean.Track;
 import com.fongmi.android.tv.impl.ParseCallback;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.engine.PlayerEngineFactory;
+import com.fongmi.android.tv.player.audio.AudioTrackRecovery;
 import com.fongmi.android.tv.player.media.MediaUrlGuard;
 import com.fongmi.android.tv.player.media.PlaySpec;
+import com.fongmi.android.tv.player.mpv.MpvPlayerEngine;
 import com.fongmi.android.tv.player.parse.ParseJob;
 import com.fongmi.android.tv.player.track.TrackUtil;
 import com.fongmi.android.tv.setting.DanmakuSetting;
@@ -63,6 +66,9 @@ public class PlayerManager implements ParseCallback {
     private boolean forcePlatformEngine;
     private int retry;
     private int decode;
+    private boolean softwareEngineFallback;
+    private int audioRecoveryAttempts;
+    private String audioRecoveryKey;
 
     public PlayerManager(Callback callback) {
         this.callback = callback;
@@ -104,7 +110,7 @@ public class PlayerManager implements ParseCallback {
     }
 
     public boolean canPreload() {
-        return engine != null && engine.getType() == PlayerEngine.Type.EXO && !PlayerSetting.isMpv();
+        return engine != null && engine.getType() == PlayerEngine.Type.EXO && !PlayerSetting.isMpv() && !softwareEngineFallback;
     }
 
     public boolean preload(Result result, long position, MediaMetadata metadata) {
@@ -465,6 +471,57 @@ public class PlayerManager implements ParseCallback {
         setSubtitleStyle();
     }
 
+    /**
+     * Exo still reports the audio track when it cannot decode it, but then keeps the audio renderer
+     * disabled: the video plays, no error is raised and the user hears nothing. Recover once per
+     * media item instead of playing silent video.
+     */
+    private void recoverUnrenderedAudio(Tracks tracks) {
+        if (engine == null || spec == null || player == null) return;
+        String key = getKey();
+        if (TextUtils.isEmpty(key)) return;
+        if (!key.equals(audioRecoveryKey)) {
+            audioRecoveryKey = key;
+            audioRecoveryAttempts = 0;
+        }
+        boolean audioDisabledByUser = player.getTrackSelectionParameters().disabledTrackTypes.contains(C.TRACK_TYPE_AUDIO);
+        boolean exo = engine.getType() == PlayerEngine.Type.EXO;
+        AudioTrackRecovery.Action action = AudioTrackRecovery.decide(tracks, audioDisabledByUser, exo,
+                exo && MpvPlayerEngine.isAvailable(), audioRecoveryAttempts);
+        if (action == AudioTrackRecovery.Action.NONE) return;
+        audioRecoveryAttempts++;
+        MpvLogCollector.log("PlayerManager", "音轨无可用解码器: action=" + action + ", attempts=" + audioRecoveryAttempts + ", key=" + key);
+        switch (action) {
+            case RESELECT_TRACK -> reselectAudioTrack();
+            case SWITCH_ENGINE -> switchToSoftwareEngine();
+            case NOTIFY_ONLY -> Notify.show(R.string.error_audio_track_undecodable);
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * Clears the saved/forced audio selection so the normal selection can pick a track the device
+     * can actually decode, and forgets that selection because it cannot be played here.
+     */
+    private void reselectAudioTrack() {
+        TrackSelectionParameters.Builder builder = player.getTrackSelectionParameters().buildUpon();
+        builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
+        builder.setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false);
+        player.setTrackSelectionParameters(builder.build());
+        Track.delete(getKey());
+        Notify.show(R.string.error_audio_track_reselect);
+        App.post(() -> recoverUnrenderedAudio(player.getCurrentTracks()), 800);
+    }
+
+    private void switchToSoftwareEngine() {
+        long position = Math.max(0, getPosition());
+        softwareEngineFallback = true;
+        Notify.show(R.string.error_audio_track_fallback);
+        reset();
+        restartCurrent(position, false);
+    }
+
     private void handleDecodeError(PlaybackException e) {
         if (++retry > 1) {
             callback.onError(engine.getErrorMessage(e));
@@ -495,16 +552,35 @@ public class PlayerManager implements ParseCallback {
     }
 
     private void onPlayTimeout() {
+        if (retryWithSoftwareEngine()) return;
         stop();
         callback.onError(ResUtil.getString(R.string.error_play_timeout));
     }
 
+    /**
+     * Some formats never reach READY on Exo (a Matroska DTS stream did not), so the audio recovery
+     * never sees a track to react to. Retry that item once on the software engine instead of failing
+     * the user with "Timed out"; setMediaItem re-arms this timeout for the retry.
+     */
+    private boolean retryWithSoftwareEngine() {
+        if (engine == null || spec == null || TextUtils.isEmpty(spec.getUrl())) return false;
+        boolean exo = engine.getType() == PlayerEngine.Type.EXO;
+        if (!AudioTrackRecovery.shouldRetryOnTimeout(exo, MpvPlayerEngine.isAvailable(), softwareEngineFallback)) return false;
+        MpvLogCollector.log("PlayerManager", "Exo 播放超时, 改用 MPV 引擎重试: " + getKey());
+        softwareEngineFallback = true;
+        Notify.show(R.string.error_play_timeout_mpv);
+        restartCurrent(Math.max(0, getPosition()), false);
+        return true;
+    }
+
     private void ensureEngine(PlaySpec spec) {
         if (forcePlatformEngine && engine.getType() == PlayerEngine.Type.EXO) return;
-        if (!forcePlatformEngine && PlayerEngineFactory.matches(engine, spec)) return;
+        if (softwareEngineFallback && engine.getType() == PlayerEngine.Type.MPV) return;
+        if (!forcePlatformEngine && !softwareEngineFallback && PlayerEngineFactory.matches(engine, spec)) return;
         PlayerEngine old = engine;
         androidx.media3.common.PlaybackParameters parameters = player.getPlaybackParameters();
-        String targetEngine = forcePlatformEngine ? "EXO (Dolby Vision)" : engineName(PlayerSetting.getEngine());
+        String targetEngine = forcePlatformEngine ? "EXO (Dolby Vision)"
+                : softwareEngineFallback ? "MPV (音轨回退)" : engineName(PlayerSetting.getEngine());
         MpvLogCollector.log("PlayerManager", "重建播放器实例: " + engineName(old.getType()) + " -> " + targetEngine);
         // Release first so MPV enters DESTROYING before a replacement is selected.
         // The factory immediately uses Exo while native teardown is still in progress.
@@ -519,7 +595,13 @@ public class PlayerManager implements ParseCallback {
         }
         engine = forcePlatformEngine
                 ? PlayerEngineFactory.createPlatform(decode, listener)
+                : softwareEngineFallback
+                ? PlayerEngineFactory.createMpv(decode, listener)
                 : PlayerEngineFactory.create(decode, spec, listener);
+        if (softwareEngineFallback && engine.getType() != PlayerEngine.Type.MPV) {
+            // The factory already reported why MPV was unavailable; do not retry it for every item.
+            softwareEngineFallback = false;
+        }
         setPlayer(engine.getPlayer());
         restorePlaybackParameters(parameters);
     }
@@ -567,6 +649,11 @@ public class PlayerManager implements ParseCallback {
     public void start(PlaySpec spec, long timeout, long startPositionMs) {
         DiagnosticLog.record("playback", "request startPositionMs=" + startPositionMs + " decode=" + decode);
         forcePlatformEngine = false;
+        // A new media item is decoded by Exo again: only a track that again cannot be rendered
+        // moves this item to the software engine, so playable files keep Exo's own pipeline.
+        softwareEngineFallback = false;
+        audioRecoveryAttempts = 0;
+        audioRecoveryKey = null;
         this.spec = spec;
         setMediaItem(timeout, startPositionMs);
     }
@@ -708,6 +795,7 @@ public class PlayerManager implements ParseCallback {
             }
             callback.onTracksChanged();
             initTrack = true;
+            recoverUnrenderedAudio(tracks);
         }
 
         @Override
