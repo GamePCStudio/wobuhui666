@@ -54,6 +54,7 @@ if (media3SourceDir != null && !media3SourceDir.isBlank()) {
                 substitute module("androidx.media3:media3-datasource-okhttp") using project(":lib-datasource-okhttp")
                 substitute module("androidx.media3:media3-datasource-rtmp") using project(":lib-datasource-rtmp")
                 substitute module("androidx.media3:media3-decoder") using project(":lib-decoder")
+                substitute module("androidx.media3:media3-decoder-ffmpeg") using project(":lib-decoder-ffmpeg")
                 substitute module("androidx.media3:media3-exoplayer") using project(":lib-exoplayer")
                 substitute module("androidx.media3:media3-exoplayer-dash") using project(":lib-exoplayer-dash")
                 substitute module("androidx.media3:media3-exoplayer-hls") using project(":lib-exoplayer-hls")

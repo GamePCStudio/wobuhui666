@@ -23,6 +23,7 @@ val requiredModules =
     "lib-datasource-okhttp",
     "lib-datasource-rtmp",
     "lib-decoder",
+    "lib-decoder-ffmpeg",
     "lib-exoplayer",
     "lib-exoplayer-dash",
     "lib-exoplayer-hls",
