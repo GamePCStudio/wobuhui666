@@ -410,7 +410,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
             case JetStreamSettingView.KEY_BROWSE_HERO_ROTATION -> setHeroRotation();
             case JetStreamSettingView.KEY_BROWSE_BRIDGE_BASE -> onBridgeBase();
             case JetStreamSettingView.KEY_BROWSE_BRIDGE_SK -> setBridgeSk();
-            case JetStreamSettingView.KEY_BROWSE_RESTORE -> { BrowseExperienceSettings.restoreOriginal(); refreshBrowseRows(); Notify.show(R.string.browse_restored); }
+            case JetStreamSettingView.KEY_BROWSE_RESTORE -> { BrowseExperienceSettings.restoreOriginal(); RexFeedLoader.clearCache(); refreshBrowseRows(); Notify.show(R.string.browse_restored); }
             case JetStreamSettingView.KEY_SOURCE_MODE -> setSourceMode();
             case JetStreamSettingView.KEY_SOURCE_CROSS_SITE -> setSourceCrossSite();
             case JetStreamSettingView.KEY_SOURCE_CLEAR -> clearSourceLearning();
@@ -528,7 +528,10 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
 
     private void setTmdbProxy(String url) {
         String root = TmdbEndpoint.normalizeRoot(url);
-        if (!TextUtils.equals(root, TmdbEndpoint.getCustomRoot())) DiscoverApi.clearTmdbCache();
+        if (!TextUtils.equals(root, TmdbEndpoint.getCustomRoot())) {
+            DiscoverApi.clearTmdbCache();
+            RexFeedLoader.clearCache();
+        }
         Setting.putTmdbProxyUrl(root);
         setRowValue(JetStreamSettingView.KEY_TMDB_PROXY, getTmdbProxyStatus());
     }
