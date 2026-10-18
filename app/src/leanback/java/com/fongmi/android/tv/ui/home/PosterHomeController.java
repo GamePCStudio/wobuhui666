@@ -73,6 +73,7 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     private ArrayObjectAdapter rexMixedAdapter;
     private ListRow rexSpotlightRow;
     private ListRow rexMixedRow;
+    private final List<Shelf> rexShelves = new ArrayList<>();
     private boolean shelfAny;
     private ArrayObjectAdapter page;
     private int category;
@@ -265,14 +266,33 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
             if (closed || rexSpotlightAdapter == null) return;
             rexSpotlightAdapter.setItems(RexHomeCatalog.spotlights(results), new BaseDiffCallback<RexFeedResult>());
             rexMixedAdapter.setItems(RexHomeCatalog.mixed(results), new BaseDiffCallback<Vod>());
+            applyRexShelves(results);
             footer.empty = !shelfAny && !rexAny();
             notifyRow(footer);
         });
     }
 
+    /** shelf() 标记的栏目（「动漫」等新板块）以经典书架样式排在两行卡片之后、footer 之前。 */
+    private void applyRexShelves(List<RexFeedResult> results) {
+        if (page == null) return;
+        for (Shelf shelf : rexShelves) if (page.indexOf(shelf) >= 0) page.remove(shelf);
+        rexShelves.clear();
+        int index = page.indexOf(footer);
+        if (index < 0) return;
+        for (RexFeedResult result : results) {
+            if (result.getSection().isShelf() && !result.getItems().isEmpty()) {
+                Shelf shelf = new Shelf(result.getSection().getLabelRes(), null);
+                shelf.items = result.getItems();
+                rexShelves.add(shelf);
+                page.add(index++, shelf);
+            }
+        }
+    }
+
     private boolean rexAny() {
         return (rexSpotlightAdapter != null && rexSpotlightAdapter.size() > 0)
-                || (rexMixedAdapter != null && rexMixedAdapter.size() > 0);
+                || (rexMixedAdapter != null && rexMixedAdapter.size() > 0)
+                || !rexShelves.isEmpty();
     }
 
     private static void collapse(View view, boolean empty, int height) {
