@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.fongmi.android.tv.ui.custom.JetStreamVodCardRootLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="480dp"
+    android:layout_height="270dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical">
+
+    <com.fongmi.android.tv.ui.custom.JetStreamVodPosterLayout
+        android:id="@+id/poster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:duplicateParentState="true">
+
+        <com.fongmi.android.tv.ui.custom.JetStreamPosterImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.fongmi.android.tv.ui.custom.JetStreamVodScrimView
+            android:id="@+id/scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:id="@+id/overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="20dp">
+
+            <com.fongmi.android.tv.ui.custom.JetStreamRexQuoteTextView
+                android:id="@+id/quote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="3dp"
+                android:text="❝"
+                android:textSize="26sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <com.fongmi.android.tv.ui.custom.JetStreamRexCardLabelTextView
+                    android:id="@+id/section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textSize="14sp"
+                    tools:text="近一月 · 热门剧集" />
+
+                <com.fongmi.android.tv.ui.custom.JetStreamRexCardTitleTextView
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textSize="22sp"
+                    tools:text="玉簟秋" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.fongmi.android.tv.ui.custom.JetStreamVodPosterLayout>
+</com.fongmi.android.tv.ui.custom.JetStreamVodCardRootLayout>

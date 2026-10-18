@@ -39,6 +39,7 @@ import com.fongmi.android.tv.setting.PreloadSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.setting.SourceSelectionSetting;
 import com.fongmi.android.tv.setting.BrowseExperienceSettings;
+import com.fongmi.android.tv.ui.rex.RexFeedLoader;
 import com.fongmi.android.tv.setting.PosterSourcePrioritySetting;
 import com.fongmi.android.tv.ui.dialog.PosterSourcePriorityDialog;
 import com.fongmi.android.tv.utils.TmdbNetwork;
@@ -270,6 +271,8 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         setRowValue(JetStreamSettingView.KEY_BROWSE_HISTORY_ACTIONS, Setting.getSwitch(BrowseExperienceSettings.isHistoryActionsEnabled()));
         setRowValue(JetStreamSettingView.KEY_BROWSE_KEEP_SHELF, Setting.getSwitch(BrowseExperienceSettings.isPosterKeepShelfEnabled()));
         setRowVisible(JetStreamSettingView.KEY_BROWSE_KEEP_SHELF, BrowseExperienceSettings.isPosterHomeEnabled());
+        setRowValue(JetStreamSettingView.KEY_BROWSE_BRIDGE_BASE, TextUtils.isEmpty(Setting.getBridgeBase()) ? getString(R.string.setting_default) : Setting.getBridgeBase());
+        setRowValue(JetStreamSettingView.KEY_BROWSE_BRIDGE_SK, getStatus(Setting.getBridgeSk()));
         int[] rotationModes = {R.string.browse_hero_rotation_original, R.string.browse_hero_rotation_focus, R.string.browse_hero_rotation_manual};
         setRowValue(JetStreamSettingView.KEY_BROWSE_HERO_ROTATION, getString(rotationModes[BrowseExperienceSettings.getHeroRotationMode()]));
     }
@@ -405,6 +408,8 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
             case JetStreamSettingView.KEY_BROWSE_HISTORY_ACTIONS -> { BrowseExperienceSettings.putHistoryActionsEnabled(!BrowseExperienceSettings.isHistoryActionsEnabled()); refreshBrowseRows(); }
             case JetStreamSettingView.KEY_BROWSE_KEEP_SHELF -> { BrowseExperienceSettings.putPosterKeepShelfEnabled(!BrowseExperienceSettings.isPosterKeepShelfEnabled()); refreshBrowseRows(); }
             case JetStreamSettingView.KEY_BROWSE_HERO_ROTATION -> setHeroRotation();
+            case JetStreamSettingView.KEY_BROWSE_BRIDGE_BASE -> onBridgeBase();
+            case JetStreamSettingView.KEY_BROWSE_BRIDGE_SK -> setBridgeSk();
             case JetStreamSettingView.KEY_BROWSE_RESTORE -> { BrowseExperienceSettings.restoreOriginal(); refreshBrowseRows(); Notify.show(R.string.browse_restored); }
             case JetStreamSettingView.KEY_SOURCE_MODE -> setSourceMode();
             case JetStreamSettingView.KEY_SOURCE_CROSS_SITE -> setSourceCrossSite();
@@ -531,6 +536,38 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private String getTmdbProxyStatus() {
         String root = TmdbEndpoint.getCustomRoot();
         return TextUtils.isEmpty(root) ? getString(R.string.setting_default) : root;
+    }
+
+    private void onBridgeBase() {
+        setApiUrl(R.string.browse_bridge_base, Setting.getBridgeBase(), this::setBridgeBase);
+    }
+
+    private void setBridgeBase(String url) {
+        Setting.putBridgeBase(url);
+        RexFeedLoader.clearCache();
+        refreshBrowseRows();
+    }
+
+    private void setBridgeSk() {
+        EditText input = new EditText(this);
+        FrameLayout container = new FrameLayout(this);
+        int horizontalPadding = ResUtil.dp2px(24);
+        int verticalPadding = ResUtil.dp2px(12);
+        input.setHint(R.string.browse_bridge_sk);
+        input.setSingleLine(true);
+        input.setText(Setting.getBridgeSk());
+        input.setMinHeight(ResUtil.dp2px(56));
+        input.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setSelection(Setting.getBridgeSk().length());
+        container.setPadding(0, ResUtil.dp2px(8), 0, 0);
+        container.addView(input, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
+        JetStreamDialogDecor.tintButtons(new MaterialAlertDialogBuilder(this).setTitle(R.string.browse_bridge_sk).setView(container)
+                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+                    Setting.putBridgeSk(input.getText().toString().trim());
+                    RexFeedLoader.clearCache();
+                    refreshBrowseRows();
+                }).setNegativeButton(R.string.dialog_negative, null).show());
     }
 
     private void onVodEdit() {

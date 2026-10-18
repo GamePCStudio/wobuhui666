@@ -12,4 +12,6 @@
     <string name="rex_section_kr_series">Korean series</string>
     <string name="rex_section_cn_variety">Chinese variety</string>
     <string name="rex_section_anime">Daily anime</string>
+    <string name="browse_bridge_base">Douban bridge URL</string>
+    <string name="browse_bridge_sk">Douban bridge key (sk_)</string>
 </resources>

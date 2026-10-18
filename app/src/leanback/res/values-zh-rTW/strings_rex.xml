@@ -11,4 +11,6 @@
     <string name="rex_section_kr_series">熱播韓劇</string>
     <string name="rex_section_cn_variety">熱門綜藝</string>
     <string name="rex_section_anime">每日新番</string>
+    <string name="browse_bridge_base">豆瓣雲橋位址</string>
+    <string name="browse_bridge_sk">豆瓣雲橋密鑰（sk_）</string>
 </resources>

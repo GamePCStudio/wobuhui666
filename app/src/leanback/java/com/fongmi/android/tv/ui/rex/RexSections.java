@@ -34,4 +34,11 @@ public final class RexSections {
         sections.add(RexSection.anime("anime_daily", R.string.rex_section_anime).shelf());
         return sections;
     }
+
+    /** 按 key 查栏目（栏目列表承接页用）。 */
+    public static RexSection byKey(String key) {
+        if (key == null) return null;
+        for (RexSection section : home()) if (section.getKey().equals(key)) return section;
+        return null;
+    }
 }

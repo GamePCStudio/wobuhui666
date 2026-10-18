@@ -12,4 +12,6 @@
     <string name="rex_section_kr_series">热播韩剧</string>
     <string name="rex_section_cn_variety">热门综艺</string>
     <string name="rex_section_anime">每日新番</string>
+    <string name="browse_bridge_base">豆瓣云桥地址</string>
+    <string name="browse_bridge_sk">豆瓣云桥密钥（sk_）</string>
 </resources>

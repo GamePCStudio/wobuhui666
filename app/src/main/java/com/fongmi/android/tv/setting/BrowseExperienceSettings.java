@@ -46,5 +46,7 @@ public final class BrowseExperienceSettings {
         putHistoryActionsEnabled(false);
         putPosterKeepShelfEnabled(false);
         putHeroRotationMode(HERO_ROTATION_ORIGINAL);
+        Setting.putBridgeBase("");
+        Setting.putBridgeSk("");
     }
 }
