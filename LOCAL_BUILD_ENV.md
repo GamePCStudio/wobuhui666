@@ -11,7 +11,7 @@
 | Android SDK | `platform-tools`、`platforms;android-37.0`、`build-tools;37.0.0` |
 | Android Gradle Plugin | 仓库固定为 9.0.1 |
 | Gradle | 使用 `./gradlew`，仓库固定为 9.1.0，无需另装系统 Gradle |
-| Media3 | 公开仓库 `wobuhui666/media` 的固定提交 `3c2cbe8ac742c2fe15eff52f03eeb3b1b648848d`、本仓库配套的 composite settings 与固定补丁 |
+| Media3 | 公开仓库 `wobuhui666/media` 的固定提交 `342f6590e02ac390e0bd6b4488b8a1bff55747c1`、本仓库配套的 composite settings 与固定补丁 |
 | APK 目标 | Android 7.0 / API 24 起；`arm64-v8a` 或 `armeabi-v7a` |
 
 建议准备 4 核、16 GB 内存和至少 64 GB 磁盘；同时运行模拟器会增加资源占用。通常无需安装 NDK：MPV、FFmpeg、libass 等原生库已经随仓库提供。修改 MPV 桥时，再按 [MPV 原生桥说明](third_party/mpv/README.md) 使用固定 NDK r29 重编。
@@ -127,7 +127,7 @@ cd "$TV_PROJECT_DIR"
 test ! -e .media3
 git init .media3
 git -C .media3 remote add origin https://github.com/wobuhui666/media.git
-git -C .media3 fetch --depth 1 origin 3c2cbe8ac742c2fe15eff52f03eeb3b1b648848d
+git -C .media3 fetch --depth 1 origin 342f6590e02ac390e0bd6b4488b8a1bff55747c1
 git -C .media3 checkout --detach FETCH_HEAD
 cp .github/media3-composite-settings.gradle.kts .media3/settings.gradle.kts
 export MEDIA3_SOURCE_DIR="$TV_PROJECT_DIR/.media3"

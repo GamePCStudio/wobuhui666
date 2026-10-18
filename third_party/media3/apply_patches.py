@@ -9,22 +9,14 @@ import subprocess
 import sys
 
 
-BASE_COMMIT = "3c2cbe8ac742c2fe15eff52f03eeb3b1b648848d"
+BASE_COMMIT = "342f6590e02ac390e0bd6b4488b8a1bff55747c1"
 PATCH = Path(__file__).with_name("paused-danmaku-toggle.patch")
 PATCH_SHA256 = "463eba72b1c56c19e38065a8d1f4476ed7a8e6b0d5bd39f0a8c05ceb47c169d7"
 TARGETS = {
     "libraries/ui_danmaku/src/main/java/androidx/media3/ui/danmaku/DanmakuController.java",
     "libraries/ui_danmaku/src/main/java/androidx/media3/ui/danmaku/DanmakuView.java",
 }
-MMT_TLV_PATCH = Path(__file__).with_name("matroska-before-mmt-tlv.patch")
-MMT_TLV_PATCH_SHA256 = "0962b872882aabdb68610208363b7dd9fa2810964708788cb3ddee8a3cac36a3"
-MMT_TLV_TARGETS = {
-    "libraries/extractor/src/main/java/androidx/media3/extractor/DefaultExtractorsFactory.java",
-}
-PATCH_SPECS = (
-    {"patch": PATCH, "sha256": PATCH_SHA256, "targets": TARGETS},
-    {"patch": MMT_TLV_PATCH, "sha256": MMT_TLV_PATCH_SHA256, "targets": MMT_TLV_TARGETS},
-)
+PATCH_SPECS = ({"patch": PATCH, "sha256": PATCH_SHA256, "targets": TARGETS},)
 
 
 class PatchError(RuntimeError):
