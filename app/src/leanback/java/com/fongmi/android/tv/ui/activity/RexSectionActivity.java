@@ -21,6 +21,7 @@ import com.fongmi.android.tv.bean.RexSection;
 import com.fongmi.android.tv.bean.Style;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityDiscoverResultBinding;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.setting.BrowseExperienceSettings;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
@@ -67,8 +68,20 @@ public class RexSectionActivity extends BaseActivity implements VodPresenter.OnC
             return;
         }
         mBinding.title.setText(section.getLabelRes());
+        applySourceLabel();
         setRecyclerView();
         load(1);
+    }
+
+    /** TMDB 栏目挂编辑推荐标签；豆瓣系挂豆瓣标签；公开 feed 栏目不显示来源。 */
+    private void applySourceLabel() {
+        int label = switch (section.getSource()) {
+            case TMDB_LIST, TMDB_DISCOVER -> R.string.discover_source_tmdb;
+            case BRIDGE_CATALOG, REXNOW_DOUBAN -> R.string.discover_source_douban;
+            default -> 0;
+        };
+        mBinding.sourceLabel.setVisibility(label == 0 ? View.GONE : View.VISIBLE);
+        if (label != 0) mBinding.sourceLabel.setText(label);
     }
 
     private void setRecyclerView() {

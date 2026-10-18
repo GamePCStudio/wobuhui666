@@ -26,6 +26,7 @@
             android:textSize="28sp" />
 
         <com.fongmi.android.tv.ui.custom.JetStreamSupportingLabelTextView
+            android:id="@+id/sourceLabel"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="4dp" android:layout_marginBottom="8dp"
             android:text="@string/discover_source_tmdb" android:textSize="13sp" />
