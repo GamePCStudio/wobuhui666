@@ -42,7 +42,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: "13114758"
-          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0"
+          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0 ndk;29.0.14206865 cmake;3.22.1"
 
       - name: Configure SDK 37.0 target
         run: |

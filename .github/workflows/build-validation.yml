@@ -46,7 +46,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: "13114758"
-          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0"
+          packages: "platform-tools platforms;android-37.0 build-tools;37.0.0 ndk;29.0.14206865 cmake;3.22.1"
 
       - name: Checkout Media3 fork
         uses: actions/checkout@v4
@@ -145,7 +145,7 @@ jobs:
       - name: Verify packages and collect APKs
         run: |
           python - <<'PY'
-          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import hashlib, json, os, pathlib, re, shutil, subprocess, zipfile
           root = pathlib.Path('app/build/outputs/apk')
           apks = list(root.rglob('*.apk'))
           groups = {
@@ -178,6 +178,16 @@ jobs:
                       raise SystemExit('Unexpected instrumentation target package')
               output = destination / (package + '-' + role + '-debug.apk')
               shutil.copyfile(source, output)
+              if role == 'app':
+                  required = ['lib/arm64-v8a/libffmpegJNI.so', 'lib/arm64-v8a/libavcodec.so',
+                              'lib/arm64-v8a/libavutil.so', 'lib/arm64-v8a/libavformat.so',
+                              'lib/arm64-v8a/libswresample.so']
+                  with zipfile.ZipFile(source) as bundle:
+                      names = set(bundle.namelist())
+                      missing = [name for name in required if name not in names]
+                      if missing:
+                          raise SystemExit('FFmpeg extension missing from APK: ' + ', '.join(missing))
+                      metadata['media3FfmpegJniSha256'] = hashlib.sha256(bundle.read('lib/arm64-v8a/libffmpegJNI.so')).hexdigest()
               metadata['files'].append({'file': output.name, 'applicationId': expected,
                                         'sha256': hashlib.sha256(output.read_bytes()).hexdigest()})
           (destination / 'build-metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')

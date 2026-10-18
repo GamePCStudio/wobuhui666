@@ -75,6 +75,12 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // The Media3 FFmpeg extension and the MPV bundle deliberately ship the same
+            // FFmpeg 9 shared libraries (verified byte-identical for both ABIs), so the
+            // merge keeps one copy per ABI. libc++_shared likewise comes from NDK r29.
+            pickFirsts.addAll(["**/libavcodec.so", "**/libavdevice.so", "**/libavfilter.so",
+                               "**/libavformat.so", "**/libavutil.so", "**/libswresample.so",
+                               "**/libswscale.so", "**/libc++_shared.so"])
         }
     }
 
@@ -145,6 +151,11 @@ dependencies {
     implementation libs.coroutines.android
     implementation libs.lifecycle.service
     implementation libs.bundles.media3
+    // The FFmpeg extension module is not published to Google Maven; it exists only in the
+    // composite Media3 build, so plain builds keep the previous renderer chain unchanged.
+    if (!(System.getenv("MEDIA3_SOURCE_DIR") ?: "").isBlank()) {
+        implementation libs.media3.decoder.ffmpeg
+    }
     implementation project(':subtitle-ass')
     implementation libs.palette
     implementation libs.recyclerview
