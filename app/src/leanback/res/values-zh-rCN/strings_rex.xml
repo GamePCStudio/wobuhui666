@@ -1,0 +1,15 @@
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <!-- Rex 两行：每个栏目一张精选卡，文案同时作大卡角标 -->
+    <string name="rex_section_trending_day">今日 · 热门趋势</string>
+    <string name="rex_section_now_playing">正在热映 · 电影</string>
+    <string name="rex_section_popular_movie">备受欢迎 · 电影</string>
+    <string name="rex_section_popular_tv">备受欢迎 · 剧集</string>
+    <string name="rex_section_top_movie">高分 · 电影</string>
+    <string name="rex_section_top_tv">高分 · 剧集</string>
+    <string name="rex_section_douban_movie">豆瓣 · 热门电影</string>
+    <string name="rex_section_douban_tv">豆瓣 · 热门剧集</string>
+    <string name="rex_section_cn_series">热门华语剧集</string>
+    <string name="rex_section_kr_series">热播韩剧</string>
+    <string name="rex_section_cn_variety">热门综艺</string>
+    <string name="rex_section_anime">每日新番</string>
+</resources>

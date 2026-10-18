@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.api.rex.RexGenreDict;
 import com.fongmi.android.tv.bean.DiscoverCredit;
 import com.fongmi.android.tv.bean.DiscoverDetail;
 import com.fongmi.android.tv.bean.DiscoverFacet;
@@ -243,11 +244,11 @@ public class DiscoverApi {
         return items;
     }
 
-    static List<Vod> parseTmdbResults(String body) {
+    public static List<Vod> parseTmdbResults(String body) {
         return parseTmdbResults(body, "");
     }
 
-    static List<Vod> parseTmdbResults(String body, String fallbackMediaType) {
+    public static List<Vod> parseTmdbResults(String body, String fallbackMediaType) {
         List<Vod> items = new ArrayList<>();
         JsonArray results = getArray(parseObject(body), "results");
         if (results == null) return items;
@@ -268,6 +269,7 @@ public class DiscoverApi {
             item.setContent(getString(result, "overview"));
             item.setTypeName(mediaType);
             item.setBackdrop(tmdbBackdrop(getString(result, "backdrop_path")));
+            item.setGenreText(RexGenreDict.join(getArray(result, "genre_ids")));
             items.add(item);
         }
         return items;
@@ -281,22 +283,22 @@ public class DiscoverApi {
         return isEmpty(rate) ? "" : rate.trim() + "分";
     }
 
-    static String tmdbName(@Nullable JsonObject result) {
+    public static String tmdbName(@Nullable JsonObject result) {
         String title = getString(result, "title");
         return isEmpty(title) ? getString(result, "name") : title;
     }
 
-    static String tmdbPic(String posterPath) {
+    public static String tmdbPic(String posterPath) {
         if (isEmpty(posterPath)) return "";
         String path = posterPath.trim();
         return tmdbImage("w342", path);
     }
 
-    static String tmdbBackdrop(String backdropPath) {
+    public static String tmdbBackdrop(String backdropPath) {
         return tmdbImage("w780", backdropPath);
     }
 
-    static String tmdbLogo(String logoPath) {
+    public static String tmdbLogo(String logoPath) {
         return tmdbImage("w300", logoPath);
     }
 
@@ -306,12 +308,12 @@ public class DiscoverApi {
         return TmdbEndpoint.getImageBase() + size + (path.startsWith("/") ? path : "/" + path);
     }
 
-    static String tmdbType(@Nullable JsonObject result) {
+    public static String tmdbType(@Nullable JsonObject result) {
         String type = tmdbMediaType(result, "");
         return DiscoverMediaKey.TV.equals(type) ? "剧集" : "电影";
     }
 
-    static String tmdbMediaType(@Nullable JsonObject result, String fallback) {
+    public static String tmdbMediaType(@Nullable JsonObject result, String fallback) {
         String type = getString(result, "media_type");
         if (!DiscoverMediaKey.MOVIE.equals(type) && !DiscoverMediaKey.TV.equals(type)) type = fallback;
         if (!DiscoverMediaKey.MOVIE.equals(type) && !DiscoverMediaKey.TV.equals(type)) {
@@ -320,13 +322,13 @@ public class DiscoverApi {
         return type;
     }
 
-    static String tmdbYear(@Nullable JsonObject result) {
+    public static String tmdbYear(@Nullable JsonObject result) {
         String date = getString(result, "release_date");
         if (isEmpty(date)) date = getString(result, "first_air_date");
         return date.trim().length() >= 4 ? date.trim().substring(0, 4) : "";
     }
 
-    static String tmdbRemarks(double voteAverage) {
+    public static String tmdbRemarks(double voteAverage) {
         return voteAverage > 0 ? String.format(Locale.US, "%.1f分", voteAverage) : "";
     }
 

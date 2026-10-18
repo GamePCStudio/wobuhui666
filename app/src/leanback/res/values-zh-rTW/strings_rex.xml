@@ -1,0 +1,14 @@
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <string name="rex_section_trending_day">今日 · 熱門趨勢</string>
+    <string name="rex_section_now_playing">正在熱映 · 電影</string>
+    <string name="rex_section_popular_movie">備受歡迎 · 電影</string>
+    <string name="rex_section_popular_tv">備受歡迎 · 劇集</string>
+    <string name="rex_section_top_movie">高分 · 電影</string>
+    <string name="rex_section_top_tv">高分 · 劇集</string>
+    <string name="rex_section_douban_movie">豆瓣 · 熱門電影</string>
+    <string name="rex_section_douban_tv">豆瓣 · 熱門劇集</string>
+    <string name="rex_section_cn_series">熱門華語劇集</string>
+    <string name="rex_section_kr_series">熱播韓劇</string>
+    <string name="rex_section_cn_variety">熱門綜藝</string>
+    <string name="rex_section_anime">每日新番</string>
+</resources>

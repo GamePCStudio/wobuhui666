@@ -66,6 +66,24 @@ public class Setting {
         return Prefers.getString("tmdb_proxy_url", "");
     }
 
+    /** 豆瓣云桥地址（空 = 官方默认；可填自建实例），仅本机存储。 */
+    public static String getBridgeBase() {
+        return Prefers.getString("browse_bridge_base", "");
+    }
+
+    public static void putBridgeBase(String url) {
+        Prefers.put("browse_bridge_base", url);
+    }
+
+    /** 豆瓣云桥密钥（sk_ 开头），仅存本机 SharedPreferences，不入库不分发。 */
+    public static String getBridgeSk() {
+        return Prefers.getString("browse_bridge_sk", "");
+    }
+
+    public static void putBridgeSk(String sk) {
+        Prefers.put("browse_bridge_sk", sk);
+    }
+
     public static void putTmdbProxyUrl(String url) {
         Prefers.put("tmdb_proxy_url", url == null ? "" : url.trim());
     }
