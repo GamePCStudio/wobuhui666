@@ -94,13 +94,25 @@ public final class AdvancedSubtitleController {
 
     public ExtractorsFactory extractors(ExtractorsFactory original, androidx.media3.common.MediaItem item) {
         SubtitleSource fonts = fontsFor(item);
-        return () -> {
-            androidx.media3.extractor.Extractor[] all = original.createExtractors();
-            for (int i = 0; i < all.length; i++) {
-                if (all[i] instanceof androidx.media3.extractor.ts.TsExtractor) all[i] = new DvbSubtitleExtractor(parserFactory());
-                else if (nativeAss && all[i] instanceof MatroskaExtractor) all[i] = new AssTrackingExtractor(new FontMatroskaExtractor(parserFactory(), fonts.fonts), fonts.history);
+        return new ExtractorsFactory() {
+            @Override public androidx.media3.extractor.Extractor[] createExtractors() {
+                return wrap(original.createExtractors());
             }
-            return all;
+
+            // Forward the URI/header overload: the base factory infers the container type from it
+            // and tries that extractor first (.mkv -> Matroska). The interface default method
+            // would silently drop the hint and demote every item to the generic extractor order.
+            @Override public androidx.media3.extractor.Extractor[] createExtractors(android.net.Uri uri, java.util.Map<String, java.util.List<String>> responseHeaders) {
+                return wrap(original.createExtractors(uri, responseHeaders));
+            }
+
+            private androidx.media3.extractor.Extractor[] wrap(androidx.media3.extractor.Extractor[] all) {
+                for (int i = 0; i < all.length; i++) {
+                    if (all[i] instanceof androidx.media3.extractor.ts.TsExtractor) all[i] = new DvbSubtitleExtractor(parserFactory());
+                    else if (nativeAss && all[i] instanceof MatroskaExtractor) all[i] = new AssTrackingExtractor(new FontMatroskaExtractor(parserFactory(), fonts.fonts), fonts.history);
+                }
+                return all;
+            }
         };
     }
 
