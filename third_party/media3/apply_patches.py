@@ -16,6 +16,15 @@ TARGETS = {
     "libraries/ui_danmaku/src/main/java/androidx/media3/ui/danmaku/DanmakuController.java",
     "libraries/ui_danmaku/src/main/java/androidx/media3/ui/danmaku/DanmakuView.java",
 }
+MMT_TLV_PATCH = Path(__file__).with_name("matroska-before-mmt-tlv.patch")
+MMT_TLV_PATCH_SHA256 = "0962b872882aabdb68610208363b7dd9fa2810964708788cb3ddee8a3cac36a3"
+MMT_TLV_TARGETS = {
+    "libraries/extractor/src/main/java/androidx/media3/extractor/DefaultExtractorsFactory.java",
+}
+PATCH_SPECS = (
+    {"patch": PATCH, "sha256": PATCH_SHA256, "targets": TARGETS},
+    {"patch": MMT_TLV_PATCH, "sha256": MMT_TLV_PATCH_SHA256, "targets": MMT_TLV_TARGETS},
+)
 
 
 class PatchError(RuntimeError):
@@ -36,7 +45,7 @@ def checked_git(repository, *arguments):
     return result.stdout.strip()
 
 
-def apply_fixed_patch(repository, patch=PATCH, patch_sha256=PATCH_SHA256, base_commit=BASE_COMMIT):
+def apply_fixed_patch(repository, patch=PATCH, patch_sha256=PATCH_SHA256, base_commit=BASE_COMMIT, targets=TARGETS):
     repository = Path(repository).resolve()
     patch = Path(patch).resolve()
     if not repository.is_dir():
@@ -58,9 +67,9 @@ def apply_fixed_patch(repository, patch=PATCH, patch_sha256=PATCH_SHA256, base_c
         r"^diff --git a/(\S+) b/(\S+)\nindex ([0-9a-f]{40})\.\.([0-9a-f]{40}) 100644$",
         text, re.MULTILINE,
     )
-    if (len(entries) != len(TARGETS) or text.count("diff --git ") != len(TARGETS)
-            or {old for old, new, _, _ in entries if old == new} != TARGETS):
-        raise PatchError("Patch must contain only the two reviewed regular files with full blob IDs")
+    if (len(entries) != len(targets) or text.count("diff --git ") != len(targets)
+            or {old for old, new, _, _ in entries if old == new} != targets):
+        raise PatchError(f"Patch {patch.name} must contain only the reviewed regular files with full blob IDs")
 
     states = []
     for name, _, old_blob, new_blob in entries:
@@ -77,24 +86,31 @@ def apply_fixed_patch(repository, patch=PATCH, patch_sha256=PATCH_SHA256, base_c
             raise PatchError(f"Media3 target has extra local changes: {name}. No files were changed.")
         states.append(current == new_blob)
     if any(states) and not all(states):
-        raise PatchError("Media3 patch is only partially applied. No files were changed.")
+        raise PatchError(f"Media3 patch {patch.name} is only partially applied. No files were changed.")
 
     if all(states):
         checked_git(repository, "apply", "--reverse", "--check", str(patch))
-        return "Media3 paused-danmaku patch already applied"
+        return f"Media3 {patch.stem} patch already applied"
     checked_git(repository, "apply", "--check", "--whitespace=error-all", str(patch))
     checked_git(repository, "apply", "--whitespace=error-all", str(patch))
     for name, _, _, new_blob in entries:
         if checked_git(repository, "hash-object", "--no-filters", "--", name) != new_blob:
             raise PatchError(f"Media3 patched content verification failed: {name}")
-    return "Applied reviewed Media3 paused-danmaku patch"
+    return f"Applied reviewed Media3 {patch.stem} patch"
+
+
+def apply_media3_patches(repository, specs=PATCH_SPECS, base_commit=BASE_COMMIT):
+    return "; ".join(
+        apply_fixed_patch(repository, spec["patch"], spec["sha256"], base_commit, spec["targets"])
+        for spec in specs
+    )
 
 
 if __name__ == "__main__":
     try:
         if len(sys.argv) != 2:
             raise PatchError("Usage: python3 apply_patches.py MEDIA3_SOURCE_DIR")
-        print(apply_fixed_patch(sys.argv[1]))
+        print(apply_media3_patches(sys.argv[1]))
     except (PatchError, OSError, UnicodeError) as error:
         print(f"Media3 patch error: {error}", file=sys.stderr)
         sys.exit(1)

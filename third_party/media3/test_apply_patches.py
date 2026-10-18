@@ -113,5 +113,32 @@ class ApplyPatchesTest(unittest.TestCase):
         self.assert_rejected_without_writes()
 
 
+    def test_multiple_patch_specs_apply_and_verify_independently(self):
+        extra_name = "libraries/extractor/src/main/java/androidx/media3/extractor/FixtureOrder.java"
+        extra = self.repository / extra_name
+        extra.parent.mkdir(parents=True, exist_ok=True)
+        original = b"class FixtureOrder {\n  int value() { return 1; }\n}\n"
+        patched = original.replace(b"return 1", b"return 2")
+        extra.write_bytes(original)
+        self.command("add", ".")
+        self.command("-c", "commit.gpgsign=false", "commit", "-qm", "extra baseline")
+        base = self.command("rev-parse", "HEAD").strip()
+        extra.write_bytes(patched)
+        extra_patch = self.root / "extra.patch"
+        extra_patch.write_text(self.command("diff", "--full-index", "--", extra_name))
+        extra_sha = hashlib.sha256(extra_patch.read_bytes()).hexdigest()
+        extra.write_bytes(original)
+        specs = [
+            {"patch": self.patch, "sha256": self.sha, "targets": apply_patches.TARGETS},
+            {"patch": extra_patch, "sha256": extra_sha, "targets": {extra_name}},
+        ]
+        result = apply_patches.apply_media3_patches(self.repository, specs, base)
+        self.assertIn("Applied", result)
+        self.assertEqual(self.patched, self.contents())
+        self.assertEqual(patched, extra.read_bytes())
+        again = apply_patches.apply_media3_patches(self.repository, specs, base)
+        self.assertEqual(2, again.count("already applied"))
+
+
 if __name__ == "__main__":
     unittest.main()
