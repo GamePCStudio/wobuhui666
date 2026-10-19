@@ -12,7 +12,7 @@ import zipfile
 EPOCH = datetime(2020, 1, 1, tzinfo=timezone.utc)
 MAX_VERSION_CODE = 2_100_000_000
 ABIS = {"arm64_v8a": "arm64-v8a", "armeabi_v7a": "armeabi-v7a"}
-PACKAGE_NAME = "com.fongmi.android.tv"
+PACKAGE_NAME = "com.wobuhui666.android.webhtv"
 
 
 def release_version(started_at=None):
@@ -48,7 +48,7 @@ def verify_apk(apk, android_abi):
 
 
 def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
-    if repository != "wobuhui666/TV":
+    if repository != "GamePCStudio/wobuhui666":
         raise ValueError("OTA releases must belong to wobuhui666/TV")
     if not re.fullmatch(r"build-[1-9][0-9]*(?:-[1-9][0-9]*)?", tag):
         raise ValueError("Expected a build-<run_id>-<run_attempt> release tag")
