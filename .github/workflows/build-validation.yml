@@ -132,6 +132,8 @@ jobs:
             --tests "com.fongmi.android.tv.ui.custom.SeekConfirmKeySequenceTest" \
             --tests "com.fongmi.android.tv.bean.*Discover*Test" \
             --tests "com.fongmi.android.tv.api.DiscoverApiTest" \
+            --tests "com.fongmi.android.tv.api.rex.*" \
+            --tests "com.fongmi.android.tv.ui.rex.*" \
             --tests "com.fongmi.android.tv.ui.activity.DiscoverActivityTest" \
             --no-daemon --build-cache --max-workers=2
 

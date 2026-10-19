@@ -33,6 +33,15 @@ import com.fongmi.android.tv.bean.DiscoverRankItem;
 import com.fongmi.android.tv.bean.DiscoverRequestState;
 import com.fongmi.android.tv.bean.DoubanDetail;
 import com.fongmi.android.tv.bean.Style;
+import com.fongmi.android.tv.bean.RexSection;
+import com.fongmi.android.tv.ui.activity.RexSectionActivity;
+import com.fongmi.android.tv.ui.adapter.BaseDiffCallback;
+import com.fongmi.android.tv.ui.presenter.RexPosterPresenter;
+import com.fongmi.android.tv.ui.presenter.RexSpotlightPresenter;
+import com.fongmi.android.tv.ui.rex.RexFeedLoader;
+import com.fongmi.android.tv.ui.rex.RexFeedResult;
+import com.fongmi.android.tv.ui.rex.RexHomeCatalog;
+import com.fongmi.android.tv.ui.rex.RexSections;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityDiscoverBinding;
 import com.fongmi.android.tv.ui.base.BaseActivity;
@@ -84,6 +93,11 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
     private final List<ArrayObjectAdapter> resultAdapters = new ArrayList<>();
     private final DiscoverRequestState requestState = new DiscoverRequestState();
     private final DiscoverHero hero = new DiscoverHero();
+    private final RexFeedLoader rexLoader = new RexFeedLoader();
+    private ArrayObjectAdapter rexSpotlightAdapter;
+    private ArrayObjectAdapter rexMixedAdapter;
+    private ListRow rexSpotlightRow;
+    private ListRow rexMixedRow;
     private final DiscoverFilterPanel filterPanel = new DiscoverFilterPanel();
     private final Set<String> heroDetailRequests = new HashSet<>();
     private final Object requestTag = new Object();
@@ -129,6 +143,7 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
         emptyState.setText(R.string.tv_empty_discover_retry);
         buildStablePage();
         loadFeatured();
+        loadRex();
         refreshResults(true);
     }
 
@@ -142,6 +157,8 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), VodPresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(18, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), DiscoverLandscapePresenter.class);
         selector.addPresenter(ListRow.class, new CustomRowPresenter(10, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), DiscoverRankPresenter.class);
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), RexSpotlightPresenter.class);
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), RexPosterPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setItemAnimator(null);
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
@@ -161,6 +178,23 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
         addPosterSection(R.string.discover_now_playing, DiscoverApi.Row.TMDB_NOW_PLAYING, new int[]{ResUtil.dp2px(132), ResUtil.dp2px(176)});
         addPosterSection(R.string.discover_popular_selection, DiscoverApi.Row.TMDB_POPULAR_MOVIE, new int[]{ResUtil.dp2px(132), ResUtil.dp2px(176)});
         addPosterSection(R.string.discover_top_rated, DiscoverApi.Row.TMDB_TOP_MOVIE, new int[]{ResUtil.dp2px(132), ResUtil.dp2px(176)});
+        rexSpotlightAdapter = new ArrayObjectAdapter(new RexSpotlightPresenter(new RexSpotlightPresenter.Listener() {
+            @Override
+            public void onSectionClick(RexSection section, View card) {
+                RexSectionActivity.start(DiscoverActivity.this, section);
+            }
+
+            @Override
+            public boolean onSectionLongClick(RexSection section) {
+                RexSectionActivity.start(DiscoverActivity.this, section);
+                return true;
+            }
+        }));
+        rexMixedAdapter = new ArrayObjectAdapter(new RexPosterPresenter(DiscoverActivity.this));
+        rexSpotlightRow = new ListRow(rexSpotlightAdapter);
+        rexMixedRow = new ListRow(rexMixedAdapter);
+        mAdapter.add(rexSpotlightRow);
+        mAdapter.add(rexMixedRow);
         mAdapter.add(filterPanel);
         mAdapter.add(R.string.discover_filter_results);
         resultStartPosition = mAdapter.size();
@@ -221,6 +255,14 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
                 updateHero();
                 completeFeatured();
             }
+        });
+    }
+
+    private void loadRex() {
+        rexLoader.load(RexSections.home(), results -> {
+            if (isInactive() || rexSpotlightAdapter == null) return;
+            rexSpotlightAdapter.setItems(RexHomeCatalog.spotlights(results), new BaseDiffCallback<RexFeedResult>());
+            rexMixedAdapter.setItems(RexHomeCatalog.mixed(results), new BaseDiffCallback<Vod>());
         });
     }
 
@@ -818,6 +860,7 @@ public class DiscoverActivity extends BaseActivity implements VodPresenter.OnCli
 
     @Override
     protected void onDestroy() {
+        rexLoader.close();
         destroyed = true;
         DiscoverApi.cancel(requestTag);
         if (scroller != null) mBinding.recycler.removeOnScrollListener(scroller);

@@ -26,6 +26,17 @@ import com.fongmi.android.tv.databinding.AdapterHomeWallShelfBinding;
 import com.fongmi.android.tv.ui.activity.DiscoverActivity;
 import com.fongmi.android.tv.ui.activity.DiscoverDetailActivity;
 import com.fongmi.android.tv.ui.activity.SettingActivity;
+import com.fongmi.android.tv.bean.RexSection;
+import com.fongmi.android.tv.ui.activity.RexSectionActivity;
+import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
+import com.fongmi.android.tv.ui.presenter.RexPosterPresenter;
+import com.fongmi.android.tv.ui.presenter.RexSpotlightPresenter;
+import com.fongmi.android.tv.ui.rex.RexFeedLoader;
+import com.fongmi.android.tv.ui.rex.RexFeedResult;
+import com.fongmi.android.tv.ui.rex.RexHomeCatalog;
+import com.fongmi.android.tv.ui.rex.RexSections;
+import androidx.leanback.widget.FocusHighlight;
+import androidx.leanback.widget.ListRow;
 import com.fongmi.android.tv.ui.adapter.BaseDiffCallback;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
 import com.fongmi.android.tv.ui.custom.JetStreamHomeNavView;
@@ -57,6 +68,13 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     private final Hero hero = new Hero();
     private final Categories categories = new Categories();
     private final Footer footer = new Footer();
+    private final RexFeedLoader rexLoader = new RexFeedLoader();
+    private ArrayObjectAdapter rexSpotlightAdapter;
+    private ArrayObjectAdapter rexMixedAdapter;
+    private ListRow rexSpotlightRow;
+    private ListRow rexMixedRow;
+    private final List<Shelf> rexShelves = new ArrayList<>();
+    private boolean shelfAny;
     private ArrayObjectAdapter page;
     private int category;
     private int generation;
@@ -82,6 +100,8 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
         selector.addPresenter(Categories.class, new CategoriesPresenter());
         selector.addPresenter(Shelf.class, new ShelfPresenter());
         selector.addPresenter(Footer.class, new FooterPresenter());
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), RexSpotlightPresenter.class);
+        selector.addPresenter(ListRow.class, new CustomRowPresenter(16, FocusHighlight.ZOOM_FACTOR_NONE, HorizontalGridView.FOCUS_SCROLL_ITEM, 48), RexPosterPresenter.class);
         keepShelf.register(selector);
     }
 
@@ -91,6 +111,23 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
         page.add(1, categories);
         keepShelf.attach(page);
         page.addAll(page.size(), shelves);
+        rexSpotlightAdapter = new ArrayObjectAdapter(new RexSpotlightPresenter(new RexSpotlightPresenter.Listener() {
+            @Override
+            public void onSectionClick(RexSection section, View card) {
+                RexSectionActivity.start(activity, section);
+            }
+
+            @Override
+            public boolean onSectionLongClick(RexSection section) {
+                RexSectionActivity.start(activity, section);
+                return true;
+            }
+        }));
+        rexMixedAdapter = new ArrayObjectAdapter(new RexPosterPresenter(PosterHomeController.this));
+        rexSpotlightRow = new ListRow(rexSpotlightAdapter);
+        rexMixedRow = new ListRow(rexMixedAdapter);
+        page.add(rexSpotlightRow);
+        page.add(rexMixedRow);
         page.add(footer);
         render();
         refresh();
@@ -103,6 +140,8 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     public boolean isFocusable(Object row) {
         if (row == hero) return !hero.value.isEmpty();
         if (row instanceof Shelf shelf) return !shelf.items.isEmpty();
+        if (row == rexSpotlightRow) return rexSpotlightAdapter != null && rexSpotlightAdapter.size() > 0;
+        if (row == rexMixedRow) return rexMixedAdapter != null && rexMixedAdapter.size() > 0;
         if (keepShelf.isRow(row)) return keepShelf.isFocusable();
         return row == categories || row == footer;
     }
@@ -130,6 +169,7 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
         pending = shelves.size();
         footer.loading = true;
         notifyRow(footer);
+        refreshRex();
         deadline = () -> {
             if (!isCurrent(request)) return;
             generation++;
@@ -183,7 +223,8 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
             any |= !shelf.items.isEmpty();
             notifyRow(shelf);
         }
-        footer.empty = !any;
+        shelfAny = any;
+        footer.empty = !any && !rexAny();
         notifyRow(footer);
         listener.onHeroChanged(!hero.value.isEmpty());
     }
@@ -196,6 +237,7 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
 
     public void close() {
         keepShelf.close();
+        rexLoader.close();
         closed = true;
         generation++;
         pending = 0;
@@ -217,6 +259,40 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     public boolean onLongClick(Vod item) {
         onItemClick(item);
         return true;
+    }
+
+    private void refreshRex() {
+        rexLoader.load(RexSections.home(), results -> {
+            if (closed || rexSpotlightAdapter == null) return;
+            rexSpotlightAdapter.setItems(RexHomeCatalog.spotlights(results), new BaseDiffCallback<RexFeedResult>());
+            rexMixedAdapter.setItems(RexHomeCatalog.mixed(results), new BaseDiffCallback<Vod>());
+            applyRexShelves(results);
+            footer.empty = !shelfAny && !rexAny();
+            notifyRow(footer);
+        });
+    }
+
+    /** shelf() 标记的栏目（「动漫」等新板块）以经典书架样式排在两行卡片之后、footer 之前。 */
+    private void applyRexShelves(List<RexFeedResult> results) {
+        if (page == null) return;
+        for (Shelf shelf : rexShelves) if (page.indexOf(shelf) >= 0) page.remove(shelf);
+        rexShelves.clear();
+        int index = page.indexOf(footer);
+        if (index < 0) return;
+        for (RexFeedResult result : results) {
+            if (result.getSection().isShelf() && !result.getItems().isEmpty()) {
+                Shelf shelf = new Shelf(result.getSection().getLabelRes(), null);
+                shelf.items = result.getItems();
+                rexShelves.add(shelf);
+                page.add(index++, shelf);
+            }
+        }
+    }
+
+    private boolean rexAny() {
+        return (rexSpotlightAdapter != null && rexSpotlightAdapter.size() > 0)
+                || (rexMixedAdapter != null && rexMixedAdapter.size() > 0)
+                || !rexShelves.isEmpty();
     }
 
     private static void collapse(View view, boolean empty, int height) {
