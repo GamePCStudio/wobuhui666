@@ -26,13 +26,24 @@ if (!(tvVersionCode ==~ /[0-9]+/) || tvVersionCode.toBigInteger() < 1 || tvVersi
 }
 def tvVersionName = System.getenv('TV_VERSION_NAME') ?: '5.5.5'
 
+// Default package stays compatible with FongMi/TV upgrades. Pass -PtvApplicationId=com.wobuhui666.android.tv
+// (or TV_APPLICATION_ID) to build the coexist edition that installs side by side with FongMi/TV.
+def tvDefaultApplicationId = 'com.fongmi.android.tv'
+def tvApplicationId = (project.findProperty('tvApplicationId') ?: System.getenv('TV_APPLICATION_ID') ?: tvDefaultApplicationId).toString().trim()
+if (!(tvApplicationId ==~ /[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+/)) {
+    throw new GradleException("Invalid tvApplicationId: ${tvApplicationId}")
+}
+def tvCoexist = tvApplicationId != tvDefaultApplicationId
+
 android {
     namespace = 'com.fongmi.android.tv'
 
     compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
-        applicationId "com.fongmi.android.tv"
+        applicationId tvApplicationId
+        manifestPlaceholders = [appLabel: tvCoexist ? '@string/app_name_coexist' : '@string/app_name']
+        buildConfigField "boolean", "COEXIST", tvCoexist.toString()
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode tvVersionCode.toInteger()
@@ -134,7 +145,7 @@ androidComponents {
         def mode = flavors['mode'] ?: 'mode'
         def abi = flavors['abi'] ?: 'abi'
         variant.outputs.each { output ->
-            output.outputFileName.set("${mode}-${abi}.apk")
+            output.outputFileName.set(tvCoexist ? "${mode}-${abi}-coexist.apk" : "${mode}-${abi}.apk")
         }
     }
 }
