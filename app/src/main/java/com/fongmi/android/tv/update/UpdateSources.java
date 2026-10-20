@@ -12,13 +12,24 @@ public final class UpdateSources {
 
     private static final String RELEASES = "https://github.com/wobuhui666/TV/releases/";
     private static final String POLICY = "https://raw.githubusercontent.com/wobuhui666/TV/ui/apple-tv-redesign/ota/policy.json";
+    /** Package of the edition that installs side by side with FongMi/TV; it has its own OTA manifest and APKs. */
+    public static final String COEXIST_PACKAGE = "com.wobuhui666.android.tv";
 
     private UpdateSources() {
     }
 
     public static List<String> manifests(String mode) {
+        return manifests(mode, null);
+    }
+
+    public static List<String> manifests(String mode, String packageName) {
         if (!("leanback".equals(mode) || "mobile".equals(mode))) throw new IllegalArgumentException("Unsupported mode");
-        return mirrors(RELEASES + "latest/download/" + mode + ".json");
+        return mirrors(RELEASES + "latest/download/" + mode + suffix(packageName) + ".json");
+    }
+
+    /** File-name suffix shared by the coexist edition's OTA manifest and APK assets. */
+    public static String suffix(String packageName) {
+        return COEXIST_PACKAGE.equals(packageName) ? "-coexist" : "";
     }
 
     public static List<String> policies() {

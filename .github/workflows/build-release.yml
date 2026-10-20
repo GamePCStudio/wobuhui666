@@ -135,13 +135,51 @@ jobs:
             --desc="$RELEASE_NOTES" \
             --output app/build/outputs/ota/leanback.json
 
+      - name: Stage default APKs
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/*/release/leanback-*.apk dist/
+          cp app/build/outputs/ota/*.json dist/
+
+      - name: Build coexist APKs
+        env:
+          MEDIA3_SOURCE_DIR: ${{ github.workspace }}/.media3
+        run: ./gradlew -I "$RUNNER_TEMP/tv-sdk-compat.init.gradle" -PtvApplicationId=com.wobuhui666.android.tv assembleLeanbackArm64_v8aRelease assembleLeanbackArmeabi_v7aRelease --no-daemon --build-cache --max-workers=2
+
+      - name: Stage coexist APKs
+        run: |
+          count=0
+          for apk in app/build/outputs/apk/*/release/leanback-*-coexist.apk; do
+            python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); assert m["applicationId"]=="com.wobuhui666.android.tv", m["applicationId"]' "$(dirname "$apk")/output-metadata.json"
+            cp "$apk" dist/
+            count=$((count + 1))
+          done
+          test "$count" -eq 2
+
+      - name: Generate coexist OTA manifest
+        env:
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: build-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if [ -z "$RELEASE_NOTES" ]; then
+            RELEASE_NOTES="$(git log -1 --pretty=%s)"
+          fi
+          python3 tools/ota-release.py manifest \
+            --apk-root app/build/outputs/apk \
+            --repository "$RELEASE_REPOSITORY" \
+            --tag "$RELEASE_TAG" \
+            --mode leanback \
+            --coexist \
+            --desc="$RELEASE_NOTES" \
+            --output dist/leanback-coexist.json
+          ls -l dist
+
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-apks
-          path: |
-            app/build/outputs/apk/**/release/*.apk
-            app/build/outputs/ota/*.json
+          path: dist/*
           retention-days: 14
 
       - name: Upload complete release as draft
@@ -159,9 +197,13 @@ jobs:
             Branch: `${{ github.ref_name }}`
 
             Android TV APKs for ARM64 and ARMv7. Choose the ABI supported by your Android system.
+
+            | 文件 | 包名 | 说明 |
+            | --- | --- | --- |
+            | `leanback-<abi>.apk` | `com.fongmi.android.tv` | 标准版，可覆盖升级 FongMi/TV 与本项目旧版，支持应用内更新。 |
+            | `leanback-<abi>-coexist.apk` | `com.wobuhui666.android.tv` | 共存版，可与 FongMi/TV 同时安装，桌面名不变；数据彼此独立，支持应用内更新（读取 `leanback-coexist.json`）。 |
           files: |
-            app/build/outputs/apk/**/release/*.apk
-            app/build/outputs/ota/*.json
+            dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

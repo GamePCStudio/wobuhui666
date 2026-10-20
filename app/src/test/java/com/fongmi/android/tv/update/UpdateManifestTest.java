@@ -46,6 +46,17 @@ public class UpdateManifestTest {
     }
 
     @Test
+    public void coexistEditionOnlyAcceptsCoexistAssets() throws Exception {
+        String coexist = UpdateSources.COEXIST_PACKAGE;
+        JSONObject json = manifest("leanback", "arm64_v8a").put("packageName", coexist);
+        assertThrows(IOException.class, () -> UpdateManifest.parse(json.toString(), coexist, "leanback", "arm64_v8a"));
+        asset(json).put("url", RELEASE + "leanback-arm64_v8a-coexist.apk");
+        assertEquals(RELEASE + "leanback-arm64_v8a-coexist.apk",
+                UpdateManifest.parse(json.toString(), coexist, "leanback", "arm64_v8a").asset.url);
+        assertThrows(IOException.class, () -> UpdateManifest.parse(json.toString(), PACKAGE, "leanback", "arm64_v8a"));
+    }
+
+    @Test
     public void selectsCurrentAbiEvenWhenAnotherAssetIsPresent() throws Exception {
         JSONObject json = manifest("leanback", "arm64_v8a");
         json.getJSONObject("assets").put("armeabi_v7a", new JSONObject().put("url", "bad unused asset"));

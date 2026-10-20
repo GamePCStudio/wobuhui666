@@ -13,6 +13,7 @@ EPOCH = datetime(2020, 1, 1, tzinfo=timezone.utc)
 MAX_VERSION_CODE = 2_100_000_000
 ABIS = {"arm64_v8a": "arm64-v8a", "armeabi_v7a": "armeabi-v7a"}
 PACKAGE_NAME = "com.fongmi.android.tv"
+COEXIST_PACKAGE_NAME = "com.wobuhui666.android.tv"
 
 
 def release_version(started_at=None):
@@ -47,7 +48,7 @@ def verify_apk(apk, android_abi):
     return {"size": apk.stat().st_size, "sha256": digest.hexdigest()}
 
 
-def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
+def build_manifest(apk_root, repository, tag, mode="leanback", desc="", coexist=False):
     if repository != "wobuhui666/TV":
         raise ValueError("OTA releases must belong to wobuhui666/TV")
     if not re.fullmatch(r"build-[1-9][0-9]*(?:-[1-9][0-9]*)?", tag):
@@ -55,7 +56,9 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
     if mode not in ("leanback", "mobile"):
         raise ValueError("Unsupported application mode")
     root = Path(apk_root).resolve()
-    expected = {f"{mode}-{abi}.apk": abi for abi in ABIS}
+    package_name = COEXIST_PACKAGE_NAME if coexist else PACKAGE_NAME
+    suffix = "-coexist" if coexist else ""
+    expected = {f"{mode}-{abi}{suffix}.apk": abi for abi in ABIS}
     assets = {}
     version = None
     for metadata_path in sorted(root.rglob("output-metadata.json")):
@@ -72,7 +75,7 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
             apk = (metadata_path.parent / filename).resolve()
             if not apk.is_relative_to(root):
                 raise ValueError("APK output escapes its build directory")
-            if metadata.get("applicationId") != PACKAGE_NAME:
+            if metadata.get("applicationId") != package_name:
                 raise ValueError("Unexpected Android package name")
             code, name = element.get("versionCode"), element.get("versionName")
             if type(code) is not int or not 555 < code <= MAX_VERSION_CODE:
@@ -93,7 +96,7 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
         "code": version[0],
         "name": version[1],
         "desc": desc,
-        "packageName": PACKAGE_NAME,
+        "packageName": package_name,
         "mode": mode,
         "assets": assets,
     }
@@ -110,6 +113,7 @@ def main():
     manifest.add_argument("--tag", required=True)
     manifest.add_argument("--mode", choices=("leanback", "mobile"), default="leanback")
     manifest.add_argument("--desc", default="")
+    manifest.add_argument("--coexist", action="store_true", help="Validate the com.wobuhui666.android.tv coexist APKs")
     manifest.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -117,7 +121,7 @@ def main():
             code, name = release_version(args.started_at)
             print(f"TV_VERSION_CODE={code}\nTV_VERSION_NAME={name}")
         else:
-            result = build_manifest(args.apk_root, args.repository, args.tag, args.mode, args.desc)
+            result = build_manifest(args.apk_root, args.repository, args.tag, args.mode, args.desc, args.coexist)
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except (ValueError, OSError, KeyError, zipfile.BadZipFile) as error:
