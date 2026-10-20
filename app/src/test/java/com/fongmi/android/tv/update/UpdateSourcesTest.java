@@ -28,6 +28,13 @@ public class UpdateSourcesTest {
     }
 
     @Test
+    public void coexistEditionUsesOwnManifest() {
+        String url = "https://github.com/wobuhui666/TV/releases/latest/download/leanback-coexist.json";
+        assertEquals(UpdateSources.mirrors(url), UpdateSources.manifests("leanback", UpdateSources.COEXIST_PACKAGE));
+        assertEquals(UpdateSources.manifests("leanback"), UpdateSources.manifests("leanback", "com.fongmi.android.tv"));
+    }
+
+    @Test
     public void cloudPolicyUsesDedicatedOwnBranchFile() {
         String url = "https://raw.githubusercontent.com/wobuhui666/TV/ui/apple-tv-redesign/ota/policy.json";
         assertEquals(UpdateSources.mirrors(url), UpdateSources.policies());
