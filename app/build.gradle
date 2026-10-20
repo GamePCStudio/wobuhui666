@@ -42,7 +42,6 @@ android {
 
     defaultConfig {
         applicationId tvApplicationId
-        buildConfigField "boolean", "COEXIST", tvCoexist.toString()
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode tvVersionCode.toInteger()
