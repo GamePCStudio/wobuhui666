@@ -2,7 +2,6 @@
 
     <!-- App -->
     <string name="app_name">影視</string>
-    <string name="app_name_coexist">影視 共存版</string>
 
     <!-- Live -->
     <string name="live_pass">密碼</string>
