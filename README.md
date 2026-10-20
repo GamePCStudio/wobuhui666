@@ -59,7 +59,7 @@
 | 版本 | 文件名 | 包名 | 说明 |
 | --- | --- | --- | --- |
 | 标准版 | `leanback-arm64_v8a.apk`、`leanback-armeabi_v7a.apk` | `com.fongmi.android.tv` | 与 FongMi/TV 同包名，可覆盖升级本项目旧版；支持应用内更新。 |
-| 共存版 | `leanback-arm64_v8a-coexist.apk`、`leanback-armeabi_v7a-coexist.apk` | `com.wobuhui666.android.tv` | 可与 FongMi/TV 或标准版同时安装，桌面名称为「影视 共存版」。 |
+| 共存版 | `leanback-arm64_v8a-coexist.apk`、`leanback-armeabi_v7a-coexist.apk` | `com.wobuhui666.android.tv` | 可与 FongMi/TV 或标准版同时安装，桌面名称不变。 |
 
 共存版须知：
 
