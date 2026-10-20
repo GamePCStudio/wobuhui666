@@ -67,11 +67,6 @@ public class Updater implements UpdateListener, DefaultLifecycleObserver {
 
     public void start(FragmentActivity activity) {
         if (closed || this.activity != null || activity.isFinishing() || activity.isDestroyed()) return;
-        if (BuildConfig.COEXIST) {
-            // OTA manifests only carry the default package; the coexist edition updates from Releases.
-            if (manual) Notify.show(R.string.update_coexist_manual);
-            return;
-        }
         if (active != null) {
             if (!manual) return;
             if (active.manual || active.dialog != null) {
