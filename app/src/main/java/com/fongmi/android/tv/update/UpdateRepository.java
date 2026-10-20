@@ -27,7 +27,7 @@ public final class UpdateRepository {
     }
 
     public UpdateManifest manifest(String packageName, String mode, String abi, int installedCode) throws IOException {
-        return manifest(UpdateSources.manifests(mode), packageName, mode, abi, installedCode);
+        return manifest(UpdateSources.manifests(mode, packageName), packageName, mode, abi, installedCode);
     }
 
     UpdateManifest manifest(List<String> urls, String packageName, String mode, String abi, int installedCode) throws IOException {
