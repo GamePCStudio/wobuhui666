@@ -2,6 +2,7 @@
 
     <!-- App -->
     <string name="app_name">TV</string>
+    <string name="app_name_coexist">TV Coexist</string>
 
     <!-- Live -->
     <string name="live_pass">Pass</string>
@@ -279,6 +280,7 @@
     <!-- Update -->
     <string name="update_version">New version <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">Checking for updates…</string>
+    <string name="update_coexist_manual">The coexist edition updates manually from GitHub Releases.</string>
     <string name="update_confirm">Update</string>
     <string name="update_latest">You are up to date</string>
     <string name="update_busy">An update check or download is already in progress</string>
