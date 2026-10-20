@@ -2,6 +2,7 @@
 
     <!-- App -->
     <string name="app_name">影视</string>
+    <string name="app_name_coexist">影视 共存版</string>
 
     <!-- Live -->
     <string name="live_pass">密码</string>
@@ -278,6 +279,7 @@
     <!-- Update -->
     <string name="update_version">发现新版本 <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">正在检测更新…</string>
+    <string name="update_coexist_manual">共存版不支持应用内更新，请到 GitHub Releases 下载新版。</string>
     <string name="update_confirm">更新</string>
     <string name="update_latest">已是最新版本</string>
     <string name="update_busy">正在检查或下载更新，请稍候</string>
