@@ -155,6 +155,24 @@ jobs:
             count=$((count + 1))
           done
           test "$count" -eq 2
+
+      - name: Generate coexist OTA manifest
+        env:
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: build-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if [ -z "$RELEASE_NOTES" ]; then
+            RELEASE_NOTES="$(git log -1 --pretty=%s)"
+          fi
+          python3 tools/ota-release.py manifest \
+            --apk-root app/build/outputs/apk \
+            --repository "$RELEASE_REPOSITORY" \
+            --tag "$RELEASE_TAG" \
+            --mode leanback \
+            --coexist \
+            --desc="$RELEASE_NOTES" \
+            --output dist/leanback-coexist.json
           ls -l dist
 
       - name: Upload APK artifacts
@@ -183,7 +201,7 @@ jobs:
             | 文件 | 包名 | 说明 |
             | --- | --- | --- |
             | `leanback-<abi>.apk` | `com.fongmi.android.tv` | 标准版，可覆盖升级 FongMi/TV 与本项目旧版，支持应用内更新。 |
-            | `leanback-<abi>-coexist.apk` | `com.wobuhui666.android.tv` | 共存版，可与 FongMi/TV 同时安装，桌面名不变；数据彼此独立，需在 Releases 手动更新。 |
+            | `leanback-<abi>-coexist.apk` | `com.wobuhui666.android.tv` | 共存版，可与 FongMi/TV 同时安装，桌面名不变；数据彼此独立，支持应用内更新（读取 `leanback-coexist.json`）。 |
           files: |
             dist/*
         env:
