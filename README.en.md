@@ -65,13 +65,13 @@ Every release ships two package names. Pick one depending on whether you want it
 
 | Edition | Files | Package | Notes |
 | --- | --- | --- | --- |
-| Standard | `leanback-arm64_v8a.apk`, `leanback-armeabi_v7a.apk` | `com.fongmi.android.tv` | Same package as FongMi/TV; upgrades earlier builds of this project in place and supports in-app updates. |
+| Standard | `leanback-arm64_v8a.apk`, `leanback-armeabi_v7a.apk` | `com.fongmi.android.tv` | Same package as FongMi/TV; upgrades earlier builds of this project in place. |
 | Coexist | `leanback-arm64_v8a-coexist.apk`, `leanback-armeabi_v7a-coexist.apk` | `com.wobuhui666.android.tv` | Installs side by side with FongMi/TV or the standard edition; the launcher name stays the same. |
 
 About the coexist edition:
 
 - It is a separate app: configurations, favorites, history, and settings are not shared with the standard edition or FongMi/TV. Add your configuration again under **Settings → Sources**, or move favorites and progress with [WebDAV sync](docs/webdav-sync.md).
-- In-app updates are disabled; download the newer `-coexist` APK from [Releases](https://github.com/wobuhui666/TV/releases) and install it over the old one.
+- In-app updates work: the coexist edition reads its own `leanback-coexist.json` and only downloads `-coexist` APKs.
 - The standard and coexist editions cannot upgrade into each other.
 - To build it locally, append `-PtvApplicationId=com.wobuhui666.android.tv` to the Gradle command.
 
