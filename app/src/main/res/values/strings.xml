@@ -2,7 +2,6 @@
 
     <!-- App -->
     <string name="app_name">TV</string>
-    <string name="app_name_coexist">TV Coexist</string>
 
     <!-- Live -->
     <string name="live_pass">Pass</string>
