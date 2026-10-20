@@ -42,14 +42,14 @@ public final class UpdateManifest {
         }
         JSONObject asset = requireObject(requireObject(root, "assets"), abi);
         String url = requireString(asset, "url");
-        validateAssetUrl(url, mode, abi);
+        validateAssetUrl(url, mode + "-" + abi + UpdateSources.suffix(packageName) + ".apk");
         long size = requireLong(asset, "size", 1, MAX_ASSET_BYTES);
         String sha256 = requireString(asset, "sha256");
         if (!sha256.matches("[a-fA-F0-9]{64}")) throw new IOException("Invalid APK checksum");
         return new UpdateManifest(code, name, desc, new Asset(url, size, sha256.toLowerCase(Locale.ROOT)));
     }
 
-    private static void validateAssetUrl(String value, String mode, String abi) throws IOException {
+    private static void validateAssetUrl(String value, String fileName) throws IOException {
         try {
             URI uri = new URI(value);
             String prefix = "/wobuhui666/TV/releases/download/";
@@ -62,7 +62,7 @@ public final class UpdateManifest {
             }
             String[] parts = path.substring(prefix.length()).split("/", -1);
             if (parts.length != 2 || !parts[0].matches("[A-Za-z0-9][A-Za-z0-9._-]*") ||
-                    "latest".equalsIgnoreCase(parts[0]) || !parts[1].equals(mode + "-" + abi + ".apk")) {
+                    "latest".equalsIgnoreCase(parts[0]) || !parts[1].equals(fileName)) {
                 throw new IOException("APK must use an immutable release tag and matching variant");
             }
         } catch (URISyntaxException e) {
