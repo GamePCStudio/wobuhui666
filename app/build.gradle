@@ -28,12 +28,14 @@ def tvVersionName = System.getenv('TV_VERSION_NAME') ?: '5.5.5'
 
 // Default package stays compatible with FongMi/TV upgrades. Pass -PtvApplicationId=com.wobuhui666.android.tv
 // (or TV_APPLICATION_ID) to build the coexist edition that installs side by side with FongMi/TV.
+// Any non-default package would otherwise reuse the "-coexist" file name, so editions also carry
+// -PtvApkSuffix, e.g. the fork's com.wobuhui666.android.webhtv edition builds as "-webhtv".
 def tvDefaultApplicationId = 'com.fongmi.android.tv'
 def tvApplicationId = (project.findProperty('tvApplicationId') ?: System.getenv('TV_APPLICATION_ID') ?: tvDefaultApplicationId).toString().trim()
 if (!(tvApplicationId ==~ /[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+/)) {
     throw new GradleException("Invalid tvApplicationId: ${tvApplicationId}")
 }
-def tvCoexist = tvApplicationId != tvDefaultApplicationId
+def tvApkSuffix = (project.findProperty('tvApkSuffix') ?: (tvApplicationId != tvDefaultApplicationId ? 'coexist' : '')).toString().trim()
 
 android {
     namespace = 'com.fongmi.android.tv'
@@ -167,7 +169,7 @@ androidComponents {
         def mode = flavors['mode'] ?: 'mode'
         def abi = flavors['abi'] ?: 'abi'
         variant.outputs.each { output ->
-            output.outputFileName.set(tvCoexist ? "${mode}-${abi}-coexist.apk" : "${mode}-${abi}.apk")
+            output.outputFileName.set(tvApkSuffix ? "${mode}-${abi}-${tvApkSuffix}.apk" : "${mode}-${abi}.apk")
         }
     }
 }

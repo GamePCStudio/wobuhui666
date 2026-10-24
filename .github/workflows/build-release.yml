@@ -175,6 +175,22 @@ jobs:
             --output dist/leanback-coexist.json
           ls -l dist
 
+      - name: Build webhtv APKs
+        env:
+          MEDIA3_SOURCE_DIR: ${{ github.workspace }}/.media3
+        run: ./gradlew -I "$RUNNER_TEMP/tv-sdk-compat.init.gradle" -PtvApplicationId=com.wobuhui666.android.webhtv -PtvApkSuffix=webhtv assembleLeanbackArm64_v8aRelease assembleLeanbackArmeabi_v7aRelease --no-daemon --build-cache --max-workers=2
+
+      - name: Stage webhtv APKs
+        run: |
+          count=0
+          for apk in app/build/outputs/apk/*/release/leanback-*-webhtv.apk; do
+            python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); assert m["applicationId"]=="com.wobuhui666.android.webhtv", m["applicationId"]' "$(dirname "$apk")/output-metadata.json"
+            cp "$apk" dist/
+            count=$((count + 1))
+          done
+          test "$count" -eq 2
+          ls -l dist
+
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -202,6 +218,7 @@ jobs:
             | --- | --- | --- |
             | `leanback-<abi>.apk` | `com.fongmi.android.tv` | 标准版，可覆盖升级 FongMi/TV 与本项目旧版，支持应用内更新。 |
             | `leanback-<abi>-coexist.apk` | `com.wobuhui666.android.tv` | 共存版，可与 FongMi/TV 同时安装，桌面名不变；数据彼此独立，支持应用内更新（读取 `leanback-coexist.json`）。 |
+            | `leanback-<abi>-webhtv.apk` | `com.wobuhui666.android.webhtv` | 本 fork 的「杰影视」，与前两版互不覆盖；无应用内更新（客户端只认标准版与共存版清单），换新版需重新侧载。 |
           files: |
             dist/*
         env:
