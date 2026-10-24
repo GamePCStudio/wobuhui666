@@ -67,6 +67,7 @@ import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
 import androidx.tv.material3.Text as TvText
 import com.fongmi.android.tv.ui.theme.JetStreamTheme
+import com.fongmi.android.tv.ui.components.tvTouchInput
 import com.fongmi.android.tv.utils.TmdbLogoTransformation
 
 private const val DETAIL_ACTION_FOCUSED_SCALE = 1.02f
@@ -325,9 +326,6 @@ class JetStreamVodDetailView @JvmOverloads constructor(
     private fun ActionRow() {
         val specs = actions()
         val requesters = remember { List(4) { FocusRequester() } }
-        LaunchedEffect(entryFocusToken) {
-            if (entryFocusToken > 0L && hasFocus()) requesters[selectedAction].requestFocus()
-        }
         fun actionModifier(index: Int, modifier: Modifier): Modifier = modifier
             .focusRequester(requesters[index])
             .onFocusChanged { if (it.isFocused) selectedAction = index }
@@ -362,6 +360,11 @@ class JetStreamVodDetailView @JvmOverloads constructor(
             )
         ) {
             BoxWithConstraints(Modifier.fillMaxWidth()) {
+                // The buttons attach during this subcomposition, after the outer
+                // composition. Request focus only once their targets exist.
+                LaunchedEffect(entryFocusToken) {
+                    if (entryFocusToken > 0L && hasFocus()) requesters[selectedAction].requestFocus()
+                }
                 // Keep normal outlines and scaled corners inside the View host throughout
                 // the focus animation, including the lower row's bottom border.
                 val horizontalGutter = maxOf(6.dp, maxWidth * ((DETAIL_ACTION_FOCUSED_SCALE - 1f) / 2f) + 3.dp)
@@ -390,6 +393,7 @@ class JetStreamVodDetailView @JvmOverloads constructor(
         val buttonModifier = modifier
             .height(40.dp)
             .focusProperties { canFocus = spec.enabled }
+            .tvTouchInput(spec.enabled, onClick)
             .semantics { selected = spec.selected }
         if (primary) {
             Button(
