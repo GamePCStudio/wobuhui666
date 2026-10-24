@@ -3,11 +3,13 @@ package com.fongmi.android.tv.ui.custom
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.graphics.Outline
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import com.fongmi.android.tv.R
@@ -53,14 +55,30 @@ class HomeContinueCardLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
+    private val cornerRadiusDp = 10
+    private val focusStrokeWidthDp = 3
+
     init {
         background = GradientDrawable().apply {
-            cornerRadius = jetStreamDp(10)
+            cornerRadius = jetStreamDp(cornerRadiusDp)
             setColor(jetStreamColor(R.color.jetstream_surface_container))
         }
-        foreground = jetStreamFocusForeground(cornerRadiusDp = 10, strokeWidthDp = 3)
+        foreground = jetStreamFocusForeground(cornerRadiusDp, focusStrokeWidthDp)
         clipToOutline = true
         JetStreamAnimator.bindFocus(this, JetStreamAnimator.FOCUS_SCALE_CARD, 0)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // Leanback installs its smaller default outline after creating row children.
+        // GradientDrawable insets the stroke center by half its width, so its
+        // outer corner radius includes that half-width as well.
+        outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height,
+                    jetStreamDp(cornerRadiusDp) + jetStreamDp(focusStrokeWidthDp) / 2f)
+            }
+        }
     }
 }
 
