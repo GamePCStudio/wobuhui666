@@ -54,6 +54,20 @@
 
 最低支持 **Android 7.0 / API 24**。请按 Android 系统 ABI 选包，处理器支持 64 位不等于系统支持 64 位。升级时使用相同签名的安装包，保留已有配置与记录。
 
+每次发布同时提供两种包名，按是否要与 FongMi/TV 同时安装来选：
+
+| 版本 | 文件名 | 包名 | 说明 |
+| --- | --- | --- | --- |
+| 标准版 | `leanback-arm64_v8a.apk`、`leanback-armeabi_v7a.apk` | `com.fongmi.android.tv` | 与 FongMi/TV 同包名，可覆盖升级本项目旧版。 |
+| 共存版 | `leanback-arm64_v8a-coexist.apk`、`leanback-armeabi_v7a-coexist.apk` | `com.wobuhui666.android.tv` | 可与 FongMi/TV 或标准版同时安装，桌面名称不变。 |
+
+共存版须知：
+
+- 是独立应用，配置、收藏、历史与设置不与标准版或 FongMi/TV 互通；可在 **设置 → 来源** 重新添加配置，或用 [WebDAV 同步](docs/webdav-sync.md) 迁移收藏与进度。
+- 支持应用内更新：共存版读取独立的 `leanback-coexist.json` 并只下载 `-coexist` 安装包，不会误装标准版。
+- 标准版与共存版不能互相覆盖升级；从标准版换到共存版需要单独安装。
+- 本地构建共存版：在构建命令后加上 `-PtvApplicationId=com.wobuhui666.android.tv`。
+
 ### 2. 添加自己的配置
 
 安装后，在 **设置 → 来源** 中添加配置 URL 或本地文件。点播、直播、解析和扩展能力取决于所添加的配置及其服务。

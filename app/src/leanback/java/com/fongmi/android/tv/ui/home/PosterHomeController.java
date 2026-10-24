@@ -106,10 +106,23 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     }
 
     public void attach(ArrayObjectAdapter adapter) {
+        attachRows(adapter);
+        render();
+        refresh();
+    }
+
+    /** Bind an already-loaded Rex feed snapshot without scheduling source requests. */
+    public void attachSnapshot(ArrayObjectAdapter adapter, List<RexFeedResult> results) {
+        attachRows(adapter);
+        applyRexResults(results);
+        render();
+    }
+
+    private void attachRows(ArrayObjectAdapter adapter) {
         page = adapter;
         page.add(0, hero);
         page.add(1, categories);
-        keepShelf.attach(page);
+        keepShelf.attach(page, categories);
         page.addAll(page.size(), shelves);
         rexSpotlightAdapter = new ArrayObjectAdapter(new RexSpotlightPresenter(new RexSpotlightPresenter.Listener() {
             @Override
@@ -129,8 +142,22 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
         page.add(rexSpotlightRow);
         page.add(rexMixedRow);
         page.add(footer);
-        render();
-        refresh();
+        updateHistoryOrder();
+    }
+
+    /** Keep the history sentinels contiguous while categories follow any visible history. */
+    public void updateHistoryOrder() {
+        if (page == null) return;
+        int history = page.indexOf(R.string.home_history);
+        int recommendation = page.indexOf(R.string.home_recommend);
+        boolean hasHistory = history >= 0 && recommendation == history + 2;
+        int anchor = hasHistory ? recommendation : page.indexOf(hero);
+        int index = page.indexOf(categories);
+        if (anchor >= 0 && index >= 0) {
+            int destination = anchor + 1 - (index < anchor ? 1 : 0);
+            if (index != destination) page.move(index, destination);
+        }
+        keepShelf.updateOrder();
     }
 
     public boolean isHero(Object row) {
@@ -264,12 +291,17 @@ public final class PosterHomeController implements VodPresenter.OnClickListener 
     private void refreshRex() {
         rexLoader.load(RexSections.home(), results -> {
             if (closed || rexSpotlightAdapter == null) return;
-            rexSpotlightAdapter.setItems(RexHomeCatalog.spotlights(results), new BaseDiffCallback<RexFeedResult>());
-            rexMixedAdapter.setItems(RexHomeCatalog.mixed(results), new BaseDiffCallback<Vod>());
-            applyRexShelves(results);
-            footer.empty = !shelfAny && !rexAny();
-            notifyRow(footer);
+            applyRexResults(results);
         });
+    }
+
+    private void applyRexResults(List<RexFeedResult> results) {
+        List<RexFeedResult> feeds = results == null ? List.of() : results;
+        rexSpotlightAdapter.setItems(RexHomeCatalog.spotlights(feeds), new BaseDiffCallback<RexFeedResult>());
+        rexMixedAdapter.setItems(RexHomeCatalog.mixed(feeds), new BaseDiffCallback<Vod>());
+        applyRexShelves(feeds);
+        footer.empty = !shelfAny && !rexAny();
+        notifyRow(footer);
     }
 
     /** shelf() 标记的栏目（「动漫」等新板块）以经典书架样式排在两行卡片之后、footer 之前。 */

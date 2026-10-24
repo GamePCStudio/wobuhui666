@@ -1,5 +1,7 @@
 package com.fongmi.android.tv.setting;
 
+import android.content.res.Configuration;
+
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -118,6 +120,25 @@ public class Setting {
 
     public static void putWallType(int type) {
         Prefers.put("wall_type", Math.clamp(type, MIN_WALL_TYPE, MAX_WALL_TYPE));
+    }
+
+    public static boolean isLightTheme() {
+        boolean systemNight = (App.get().getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        return getThemeMode().isLight(systemNight);
+    }
+
+    public static void putLightTheme(boolean light) {
+        putThemeMode(light ? ThemeMode.LIGHT : ThemeMode.DARK);
+    }
+
+    public static ThemeMode getThemeMode() {
+        return ThemeMode.fromStored(Prefers.getInt("tv_theme_mode", -1), Prefers.getBoolean("tv_light_theme", false));
+    }
+
+    public static void putThemeMode(ThemeMode mode) {
+        Prefers.put("tv_theme_mode", mode.value());
+        if (mode != ThemeMode.SYSTEM) Prefers.put("tv_light_theme", mode == ThemeMode.LIGHT);
     }
 
     public static int getThemeColor() {

@@ -26,13 +26,22 @@ if (!(tvVersionCode ==~ /[0-9]+/) || tvVersionCode.toBigInteger() < 1 || tvVersi
 }
 def tvVersionName = System.getenv('TV_VERSION_NAME') ?: '5.5.5'
 
+// Default package stays compatible with FongMi/TV upgrades. Pass -PtvApplicationId=com.wobuhui666.android.tv
+// (or TV_APPLICATION_ID) to build the coexist edition that installs side by side with FongMi/TV.
+def tvDefaultApplicationId = 'com.fongmi.android.tv'
+def tvApplicationId = (project.findProperty('tvApplicationId') ?: System.getenv('TV_APPLICATION_ID') ?: tvDefaultApplicationId).toString().trim()
+if (!(tvApplicationId ==~ /[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+/)) {
+    throw new GradleException("Invalid tvApplicationId: ${tvApplicationId}")
+}
+def tvCoexist = tvApplicationId != tvDefaultApplicationId
+
 android {
     namespace = 'com.fongmi.android.tv'
 
     compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
-        applicationId "com.wobuhui666.android.webhtv"
+        applicationId tvApplicationId
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode tvVersionCode.toInteger()
@@ -94,7 +103,27 @@ android {
         }
     }
 
+    sourceSets {
+        // Both mode and ABI are flavor dimensions. Bind the TV preview explicitly
+        // so a partial flavor/build-type directory cannot silently be ignored.
+        preview {
+            java.srcDirs += ['src/leanbackPreview/java', 'src/debug/java']
+            manifest.srcFile 'src/leanbackPreview/AndroidManifest.xml'
+        }
+        if (providers.gradleProperty('tvPreview').isPresent()) {
+            androidTest.java.srcDirs += 'src/tvPreviewTest/java'
+        }
+    }
+
+    testBuildType = providers.gradleProperty('tvPreview').isPresent() ? 'preview' : 'debug'
+
     buildTypes {
+        preview {
+            initWith debug
+            applicationIdSuffix '.preview'
+            versionNameSuffix '-preview'
+            matchingFallbacks = ['debug']
+        }
         release {
             minifyEnabled = false
             shrinkResources = false
@@ -129,12 +158,16 @@ android {
 }
 
 androidComponents {
+    beforeVariants(selector().withBuildType('preview')) { variant ->
+        def mode = variant.productFlavors.find { it.first == 'mode' }?.second
+        variant.enable = mode == 'leanback'
+    }
     onVariants(selector().withBuildType('release')) { variant ->
         def flavors = variant.productFlavors.collectEntries { [(it.first): it.second] }
         def mode = flavors['mode'] ?: 'mode'
         def abi = flavors['abi'] ?: 'abi'
         variant.outputs.each { output ->
-            output.outputFileName.set("${mode}-${abi}.apk")
+            output.outputFileName.set(tvCoexist ? "${mode}-${abi}-coexist.apk" : "${mode}-${abi}.apk")
         }
     }
 }
@@ -196,5 +229,6 @@ dependencies {
     androidTestImplementation libs.conscrypt.android
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
     coreLibraryDesugaring libs.desugar
 }

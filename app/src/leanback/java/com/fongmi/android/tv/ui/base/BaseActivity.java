@@ -5,6 +5,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -15,11 +16,17 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.ui.custom.JetStreamWallView;
+import com.fongmi.android.tv.ui.custom.JetStreamNativeTheme;
 import com.fongmi.android.tv.ui.theme.JetStreamThemeController;
 import com.fongmi.android.tv.ui.theme.JetStreamWallpaper;
+import com.fongmi.android.tv.ui.theme.JetStreamPalette;
+import com.fongmi.android.tv.ui.theme.RexTheme;
 import com.fongmi.android.tv.utils.Util;
 
 import org.greenrobot.eventbus.EventBus;
@@ -31,13 +38,17 @@ import me.jessyan.autosize.AutoSizeCompat;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private JetStreamWallView wallpaper;
+    private boolean appliedLightTheme;
 
     protected abstract ViewBinding getBinding();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        appliedLightTheme = RexTheme.isLight();
+        if (appliedLightTheme) setTheme(R.style.Theme_App_Light);
         super.onCreate(savedInstanceState);
         JetStreamWallpaper.start();
+        applyThemeWindow();
         setContentView(getBinding().getRoot());
         EventBus.getDefault().register(this);
         initView(savedInstanceState);
@@ -81,6 +92,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        refreshSystemTheme();
         refreshWallpaper();
     }
 
@@ -127,8 +139,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onThemeEvent(RefreshEvent event) {
         if (event.getType() != RefreshEvent.Type.THEME) return;
+        appliedLightTheme = RexTheme.isLight();
+        setTheme(appliedLightTheme ? R.style.Theme_App_Light : R.style.Theme_App);
         JetStreamThemeController.refresh();
+        applyThemeWindow();
+        JetStreamNativeTheme.refresh(findViewById(android.R.id.content));
         onThemeChanged();
+    }
+
+    private void applyThemeWindow() {
+        getWindow().setBackgroundDrawable(new ColorDrawable(JetStreamPalette.resolveColor(this, R.color.jetstream_background)));
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(RexTheme.isLight());
+        controller.setAppearanceLightNavigationBars(RexTheme.isLight());
     }
 
     protected void onThemeChanged() {
@@ -143,7 +166,12 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        refreshSystemTheme();
         Util.hideSystemUI(this);
+    }
+
+    private void refreshSystemTheme() {
+        if (appliedLightTheme != RexTheme.isLight() && !isFinishing() && !isDestroyed()) RefreshEvent.theme();
     }
 
     @Override

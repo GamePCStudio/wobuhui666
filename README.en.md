@@ -61,6 +61,20 @@ Open this repository's [Releases](https://github.com/wobuhui666/TV/releases) and
 
 Android 7.0 / API 24 is the minimum supported version. Match the APK to your device's Android ABI; a 64-bit processor alone does not guarantee a 64-bit Android environment.
 
+Every release ships two package names. Pick one depending on whether you want it installed alongside FongMi/TV:
+
+| Edition | Files | Package | Notes |
+| --- | --- | --- | --- |
+| Standard | `leanback-arm64_v8a.apk`, `leanback-armeabi_v7a.apk` | `com.fongmi.android.tv` | Same package as FongMi/TV; upgrades earlier builds of this project in place. |
+| Coexist | `leanback-arm64_v8a-coexist.apk`, `leanback-armeabi_v7a-coexist.apk` | `com.wobuhui666.android.tv` | Installs side by side with FongMi/TV or the standard edition; the launcher name stays the same. |
+
+About the coexist edition:
+
+- It is a separate app: configurations, favorites, history, and settings are not shared with the standard edition or FongMi/TV. Add your configuration again under **Settings → Sources**, or move favorites and progress with [WebDAV sync](docs/webdav-sync.md).
+- In-app updates work: the coexist edition reads its own `leanback-coexist.json` and only downloads `-coexist` APKs.
+- The standard and coexist editions cannot upgrade into each other.
+- To build it locally, append `-PtvApplicationId=com.wobuhui666.android.tv` to the Gradle command.
+
 ### 2. Install and add your configuration
 
 Install the selected APK on your device, then open **Settings → Sources** to add your own configuration URL or local file.

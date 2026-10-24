@@ -65,6 +65,20 @@ class ManifestTest(unittest.TestCase):
     def manifest(self, **kwargs):
         return OTA.build_manifest(self.root, kwargs.get("repository", "wobuhui666/TV"), kwargs.get("tag", "build-37500000000-1"), desc="遥控体验改进")
 
+    def test_coexist_manifest_uses_coexist_package_and_assets(self):
+        for abi, (apk, metadata_path) in self.paths.items():
+            coexist = apk.with_name(f"leanback-{abi}-coexist.apk")
+            apk.rename(coexist)
+            value = json.loads(metadata_path.read_text())
+            value["applicationId"] = OTA.COEXIST_PACKAGE_NAME
+            value["elements"][0]["outputFile"] = coexist.name
+            metadata_path.write_text(json.dumps(value))
+        result = OTA.build_manifest(self.root, "wobuhui666/TV", "build-37500000000-1", coexist=True)
+        self.assertEqual(OTA.COEXIST_PACKAGE_NAME, result["packageName"])
+        self.assertTrue(result["assets"]["arm64_v8a"]["url"].endswith("/leanback-arm64_v8a-coexist.apk"))
+        with self.assertRaises(ValueError):
+            self.manifest()
+
     def test_manifest_uses_actual_outputs_and_tag_pinned_downloads(self):
         result = self.manifest()
         self.assertEqual(1, result["schema"])
